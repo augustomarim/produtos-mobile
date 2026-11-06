@@ -1,0 +1,182 @@
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import EstadoLista from "@/components/produtos/EstadoLista";
+import FiltrosProdutos from "@/components/produtos/FiltrosProdutos";
+import PaginacaoProdutos from "@/components/produtos/PaginacaoProdutos";
+import ProdutoCard from "@/components/produtos/ProdutoCard";
+import ResumoProdutos from "@/components/produtos/ResumoProdutos";
+import { useProdutos } from "@/hooks/useProdutos";
+import { useSaidaConta } from "@/hooks/useSaidaConta";
+export default function HomeScreen() {
+  const catalogo = useProdutos();
+  const { saindo, confirmarSaida } = useSaidaConta(catalogo.cancelar);
+  return (
+    <SafeAreaView style={s.screen} edges={["top", "left", "right"]}>
+      <FlatList
+        data={catalogo.produtos}
+        keyExtractor={(p) => String(p.id)}
+        renderItem={({ item }) => <ProdutoCard produto={item} />}
+        contentContainerStyle={s.content}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        refreshing={catalogo.carregando}
+        onRefresh={() => {
+          if (!saindo) catalogo.atualizar();
+        }}
+        ListHeaderComponent={
+          <View>
+            <View style={s.header}>
+              <Text style={s.eyebrow}>PRODUTOS MOBILE</Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ disabled: saindo, busy: saindo }}
+                disabled={saindo}
+                onPress={confirmarSaida}
+                style={[s.button, saindo && s.disabled]}
+              >
+                <Text style={s.logout}>{saindo ? "Saindo…" : "Sair"}</Text>
+              </Pressable>
+            </View>
+            <Text style={s.title}>Meus produtos</Text>
+            <Text style={s.description}>
+              Este catálogo é exclusivo da sua conta.
+            </Text>
+            <ResumoProdutos resumo={catalogo.resultado?.resumo} />
+            <FiltrosProdutos
+              busca={catalogo.busca}
+              filtro={catalogo.filtro}
+              desabilitado={saindo}
+              onAlterar={catalogo.alterarFiltros}
+            />
+            <View style={s.toolbar}>
+              <Text style={s.hint}>
+                Ativos primeiro · Alterações mais recentes
+              </Text>
+              <Pressable
+                accessibilityRole="button"
+                disabled={catalogo.carregando || saindo}
+                onPress={catalogo.atualizar}
+                style={[
+                  s.button,
+                  (catalogo.carregando || saindo) && s.disabled,
+                ]}
+              >
+                <Text style={s.buttonText}>Atualizar</Text>
+              </Pressable>
+            </View>
+            {catalogo.resultado && !catalogo.carregando && (
+              <Text style={s.count}>
+                {catalogo.resultado.total}{" "}
+                {catalogo.resultado.total === 1 ? "produto" : "produtos"}
+                {catalogo.filtrando ? " encontrados" : ""} ·{" "}
+                {catalogo.produtos.length} nesta página
+              </Text>
+            )}
+            {catalogo.carregando && catalogo.produtos.length > 0 && (
+              <View style={s.loading}>
+                <ActivityIndicator color="#137c65" />
+                <Text style={s.hint}>Atualizando produtos…</Text>
+              </View>
+            )}
+            {!!catalogo.erro && (
+              <View style={s.errorBox}>
+                <Text accessibilityRole="alert" style={s.error}>
+                  {catalogo.erro}
+                </Text>
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={catalogo.carregando || saindo}
+                  onPress={catalogo.atualizar}
+                  style={s.retry}
+                >
+                  <Text style={s.error}>Tentar novamente</Text>
+                </Pressable>
+              </View>
+            )}
+          </View>
+        }
+        ListEmptyComponent={
+          <EstadoLista
+            carregando={catalogo.carregando}
+            erro={catalogo.erro}
+            temProdutos={!!catalogo.resultado?.resumo.total}
+          />
+        }
+        ListFooterComponent={
+          catalogo.resultado && catalogo.resultado.total > 0 ? (
+            <PaginacaoProdutos
+              pagina={catalogo.resultado.pagina}
+              paginas={catalogo.resultado.paginas}
+              desabilitado={catalogo.carregando || saindo}
+              onMudar={catalogo.mudarPagina}
+            />
+          ) : undefined
+        }
+      />
+    </SafeAreaView>
+  );
+}
+const s = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: "#f5f7f9" },
+  content: { flexGrow: 1, padding: 20, paddingBottom: 36 },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
+  eyebrow: {
+    color: "#137c65",
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 1.5,
+  },
+  title: { color: "#182b3a", fontSize: 30, fontWeight: "700", marginBottom: 8 },
+  description: {
+    color: "#607483",
+    fontSize: 15,
+    lineHeight: 22,
+    marginBottom: 22,
+  },
+  button: {
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#ccd7df",
+    borderRadius: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  buttonText: { color: "#425868", fontSize: 14, fontWeight: "600" },
+  logout: { color: "#a52b38", fontSize: 14, fontWeight: "600" },
+  disabled: { opacity: 0.45 },
+  toolbar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    marginBottom: 16,
+  },
+  hint: { flex: 1, color: "#607483", fontSize: 12, lineHeight: 18 },
+  count: { color: "#607483", fontSize: 12, marginBottom: 16 },
+  loading: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 16,
+  },
+  errorBox: {
+    backgroundColor: "#fff0f0",
+    borderRadius: 10,
+    padding: 14,
+    marginBottom: 18,
+  },
+  error: { color: "#a52b38", fontSize: 14, lineHeight: 21 },
+  retry: { alignSelf: "flex-start", paddingVertical: 10, marginTop: 4 },
+});

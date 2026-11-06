@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, type ComponentRef } from 'react';
 import {
     ActivityIndicator,
     Image,
@@ -46,8 +46,8 @@ export default function ProdutoForm({
   const [erroGeral, setErroGeral] = useState('');
   const [salvando, setSalvando] = useState(false);
 
-  const codigoRef = useRef<TextInput>(null);
-  const descricaoRef = useRef<TextInput>(null);
+  const codigoRef = useRef<ComponentRef<typeof TextInput>>(null);
+  const descricaoRef = useRef<ComponentRef<typeof TextInput>>(null);
   const envioEmAndamento = useRef(false);
 
   const {

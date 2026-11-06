@@ -88,3 +88,33 @@ login/listagem feitos na conversa porque eles ainda não estavam no GitHub.
 Se houver modificações locais adicionais, compare-as antes de integrar.
 Após trocar, rode `npm ci` e `npx expo start --clear`. O `.env` local permanece
 ignorado. Não é necessária nenhuma alteração no backend nem no banco.
+
+## Formulário e preparação de foto
+
+O formulário reutilizável está em `src/components/produtos/ProdutoForm.tsx`.
+Ele valida código/descrição, mostra erros da API junto aos campos, mantém o
+preenchimento em falhas e impede envios repetidos enquanto aguarda `onSalvar`.
+A tela que o utilizar deverá fornecer `onSalvar` e, opcionalmente, `onCancelar`.
+Os valores iniciais são lidos ao montar o formulário; para editar outro produto,
+monte uma nova instância (por exemplo, usando o ID como `key`).
+
+`src/hooks/useFotoProduto.ts` gerencia seleção, cancelamento e preparação.
+`src/lib/prepararFoto.ts` cria uma cópia JPEG no cache, com lado maior de até
+1600 pixels, compressão 0,8 e limite de 4 MB medido após a conversão. Não altera
+a imagem original nem guarda base64 no estado da tela. Arquivos HEIC dependem
+do suporte de decodificação do sistema. Recursos nativos são liberados mesmo
+quando a conversão falha. Cancelar o seletor preserva a foto anterior.
+
+ImagePicker e ImageManipulator foram adicionados com `expo install` para o
+SDK 58. O seletor é apenas de imagens, sem câmera ou microfone. As mensagens
+personalizadas de permissões do app.json valem para builds próprios; o Expo Go
+usa a configuração nativa que já vem nele.
+
+**Esta etapa ainda não inclui a rota de Novo produto, o botão na listagem ou
+o upload à API.** Por isso o formulário não aparece no aplicativo por enquanto.
+Essas ligações serão feitas no próximo passo manual.
+
+`npm test` também testa o código real de preparação, com o adaptador nativo
+simulado: conversão/configuração JPEG, limite exato de 4 MB, redimensionamento
+sem ampliar fotos pequenas e liberação dos recursos em sucesso/falha. Esses
+cenários não substituem escolher uma foto real no Expo Go do iPhone.

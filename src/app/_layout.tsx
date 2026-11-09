@@ -14,6 +14,7 @@ function Navegacao() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Protected guard={estado === "autenticado"}>
         <Stack.Screen name="(app)" />
+        <Stack.Screen name="produtos/novo" />
       </Stack.Protected>
       <Stack.Protected guard={estado !== "autenticado"}>
         <Stack.Screen name="login" />

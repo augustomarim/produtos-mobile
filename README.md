@@ -35,11 +35,13 @@ usa a conta do catálogo (a mesma do site), não a conta Expo/GitHub.
 - `src/app/login.tsx`: tela de login e restauração da sessão.
 - `src/app/(app)/_layout.tsx`: abas da área autenticada.
 - `src/app/(app)/index.tsx`: composição da tela de listagem.
+- `src/app/produtos/novo.tsx`: cadastro no Stack autenticado, acima das abas.
 - `src/components/produtos/`: cartões, filtros, resumo, paginação e estado vazio.
 - `src/hooks/useProdutos.ts`: consultas, busca, debounce, cancelamento e paginação.
 - `src/hooks/useSaidaConta.ts`: confirmação e andamento do logout.
 - `src/contexts/AuthContext.tsx`: estado compartilhado da autenticação.
 - `src/lib/api.ts`: comunicação HTTP, erros e timeout.
+- `src/lib/produtos.ts`: envio multipart do cadastro autenticado.
 - `src/lib/auth.ts`: login, refresh, SecureStore e logout.
 - `src/lib/datas.ts` e `src/types/produto.ts`: formatação e tipos compartilhados.
 
@@ -56,8 +58,8 @@ restaurar a sessão oferece nova tentativa e preserva a credencial. Logout
 remove a sessão local; se não confirmar a revogação no servidor, avisa isso.
 
 A aba Explorar ainda é a demonstração do template, agora dentro da área
-protegida. Cadastro/edição, upload e ações em produtos serão implementados
-nas próximas etapas; não há telas vazias simulando essas funcionalidades.
+protegida. Cadastro com foto já está disponível. Edição e ações em produtos serão
+implementadas nas próximas etapas; não há telas vazias simulando essas funcionalidades.
 
 ## Verificar
 
@@ -80,12 +82,12 @@ no aparelho. Nenhum build EAS ou publicação é feito por estes comandos.
 
 Antes de trocar de branch no GitHub Desktop, faça commit dos seus arquivos
 locais (sem `.env`). Depois use **Fetch origin** e selecione
-`codex/organiza-mobile`. Se o Desktop avisar sobre alterações locais ao trocar,
+`codex/cadastro-produto`. Se o Desktop avisar sobre alterações locais ao trocar,
 mantenha-as na branch original; não sobrescreva arquivos à força.
 
-A branch foi preparada a partir de `9711a74`, reconstruindo os passos de
-login/listagem feitos na conversa porque eles ainda não estavam no GitHub.
-Se houver modificações locais adicionais, compare-as antes de integrar.
+Esta atualização parte da main com autenticação, listagem e preparação de
+fotos já integradas. Se houver modificações locais adicionais, compare-as
+antes de integrar.
 Após trocar, rode `npm ci` e `npx expo start --clear`. O `.env` local permanece
 ignorado. Não é necessária nenhuma alteração no backend nem no banco.
 
@@ -110,11 +112,45 @@ SDK 58. O seletor é apenas de imagens, sem câmera ou microfone. As mensagens
 personalizadas de permissões do app.json valem para builds próprios; o Expo Go
 usa a configuração nativa que já vem nele.
 
-**Esta etapa ainda não inclui a rota de Novo produto, o botão na listagem ou
-o upload à API.** Por isso o formulário não aparece no aplicativo por enquanto.
-Essas ligações serão feitas no próximo passo manual.
+**Novo produto** abre o formulário pelo botão na listagem e envia os dados
+para a API. Veja a seção de cadastro abaixo.
 
 `npm test` também testa o código real de preparação, com o adaptador nativo
 simulado: conversão/configuração JPEG, limite exato de 4 MB, redimensionamento
 sem ampliar fotos pequenas e liberação dos recursos em sucesso/falha. Esses
 cenários não substituem escolher uma foto real no Expo Go do iPhone.
+
+## Cadastro de produtos
+
+- Na listagem, toque em **Novo produto**. A rota `src/app/produtos/novo.tsx`
+  fica no Stack protegido da raiz, fora das abas, para abrir como tela separada.
+- `ProdutoForm` continua responsável pelos campos, pré-visualização, validação
+  e erros. `src/lib/produtos.ts` monta o multipart e faz `POST /produtos` pela
+  requisição autenticada, usando o descritor de arquivo do FormData nativo.
+- Não é enviado usuarioId nem status: a API associa o dono pelo JWT e cria
+  o produto como ativo. O fetch define o boundary automaticamente.
+- Durante o envio, campos e botões ficam bloqueados; o retorno pelo navegador
+  nativo é impedido até concluir. Erros deixam os dados e a foto no formulário.
+  Não há repetição automática depois de falha de rede.
+- Sucesso remove a tela de cadastro da pilha, mostra aviso temporário e abre
+  a primeira página sem filtros, para exibir o produto novo. A próxima abertura
+  do cadastro começa vazia. Voltar após cancelar recarrega a lista e conserva
+  os filtros anteriores. O hook usa useFocusEffect para sincronizar o retorno.
+
+O upload com foto usa a implementação nativa de FormData (iOS/Android). A
+versão de navegador foi usada para conferir navegação, validação, erros, dois
+cadastros seguidos sem foto e preparação/pré-visualização da imagem; não é
+o site Next.js nem uma implementação de upload web. Os testes de contrato
+verificam o descritor multipart nativo sem acessar o Render ou o Cloudinary.
+
+Após integrar e fazer pull, reinicie com `npx expo start --clear`. Não há nova
+dependência, migração ou alteração de backend nesta etapa. No iPhone, confira:
+
+1. Criar sem foto e ver o produto na lista.
+2. Escolher uma foto (incluindo HEIC quando disponível), conferir a prévia e
+   criar. Atualizar o site na mesma conta para verificar a miniatura recebida.
+3. Abrir novo cadastro novamente e conferir campos vazios.
+4. Usar um código já existente: os campos devem continuar preenchidos.
+5. Cancelar e voltar à lista; sair da conta deve impedir abrir o cadastro.
+
+As verificações automatizadas locais não criam registros no banco publicado.

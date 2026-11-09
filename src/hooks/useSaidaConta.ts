@@ -1,6 +1,11 @@
 import { useRef, useState } from "react";
-import { Alert } from "react-native";
+import { Alert, Platform } from "react-native";
+import { confirmarAcao } from "@/lib/confirmacao";
 import { useAuth } from "@/contexts/AuthContext";
+function avisar(titulo: string, mensagem: string) {
+  if (Platform.OS === "web") window.alert(`${titulo}\n\n${mensagem}`);
+  else Alert.alert(titulo, mensagem);
+}
 export function useSaidaConta(antesDeSair: () => void) {
   const { sair } = useAuth();
   const [saindo, setSaindo] = useState(false);
@@ -12,12 +17,12 @@ export function useSaidaConta(antesDeSair: () => void) {
     antesDeSair();
     try {
       if (!(await sair()))
-        Alert.alert(
+        avisar(
           "Conta desconectada",
           "A sessão foi removida deste iPhone, mas não foi possível confirmar o encerramento no servidor.",
         );
     } catch (error) {
-      Alert.alert(
+      avisar(
         "Não foi possível sair",
         error instanceof Error ? error.message : "Tente novamente.",
       );
@@ -26,22 +31,17 @@ export function useSaidaConta(antesDeSair: () => void) {
       setSaindo(false);
     }
   }
-  function confirmarSaida() {
+  async function confirmarSaida() {
     if (emAndamento.current) return;
-    Alert.alert(
-      "Sair da conta?",
-      "Você precisará entrar novamente para acessar seus produtos.",
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Sair",
-          style: "destructive",
-          onPress: () => {
-            void encerrar();
-          },
-        },
-      ],
-    );
+    if (
+      await confirmarAcao(
+        "Sair da conta?",
+        "Você precisará entrar novamente para acessar seus produtos.",
+        "Sair",
+        true,
+      )
+    )
+      await encerrar();
   }
   return { saindo, confirmarSaida };
 }

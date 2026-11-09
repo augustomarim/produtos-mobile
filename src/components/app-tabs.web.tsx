@@ -6,14 +6,14 @@ export default function AppTabs() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Início',
+          title: 'Produtos',
         }}
       />
 
       <Tabs.Screen
-        name="explore"
+        name="conta"
         options={{
-          title: 'Explorar',
+          title: 'Conta',
         }}
       />
     </Tabs>

@@ -1,21 +1,43 @@
-import { useState } from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Link } from "expo-router";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import CheckboxProduto from "./CheckboxProduto";
+import ImagemProduto from "./ImagemProduto";
 import { formatarData } from "@/lib/datas";
 import type { Produto } from "@/types/produto";
-export default function ProdutoCard({ produto }: { produto: Produto }) {
-  const [imagemComErro, setImagemComErro] = useState<string | null>(null);
+type Props = {
+  produto: Produto;
+  selecionado: boolean;
+  desabilitado: boolean;
+  operacao?: "status" | "excluir";
+  onSelecionar: () => void;
+  onStatus: () => void;
+  onExcluir: () => void;
+};
+export default function ProdutoCard({
+  produto,
+  selecionado,
+  desabilitado,
+  operacao,
+  onSelecionar,
+  onStatus,
+  onExcluir,
+}: Props) {
   const imagem = produto.foto_miniatura || produto.foto_produto;
   const ativo = produto.status === "ativo";
   return (
     <View style={[s.card, ativo && s.activeCard]}>
       <View style={s.header}>
-        {imagem && imagemComErro !== imagem ? (
-          <Image
-            accessibilityLabel={`Foto de ${produto.descricao_produto}`}
-            source={{ uri: imagem }}
-            style={s.photo}
-            resizeMode="cover"
-            onError={() => setImagemComErro(imagem)}
+        <CheckboxProduto
+          label={`Selecionar ${produto.descricao_produto}`}
+          marcado={selecionado}
+          desabilitado={desabilitado}
+          onPress={onSelecionar}
+        />
+        {imagem ? (
+          <ImagemProduto
+            uri={produto.foto_produto || imagem}
+            miniatura={imagem}
+            nome={produto.descricao_produto}
           />
         ) : (
           <View
@@ -38,6 +60,49 @@ export default function ProdutoCard({ produto }: { produto: Produto }) {
           </View>
         </View>
       </View>
+      <View style={s.actions}>
+        <Link
+          href={{
+            pathname: "/produtos/[id]/editar",
+            params: { id: String(produto.id) },
+          }}
+          asChild
+        >
+          <Pressable
+            accessibilityRole="button"
+            disabled={desabilitado}
+            style={StyleSheet.flatten([s.action, desabilitado && s.disabled])}
+          >
+            <Text style={s.actionText}>Editar</Text>
+          </Pressable>
+        </Link>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`${ativo ? "Inativar" : "Ativar"} ${produto.descricao_produto}`}
+          disabled={desabilitado}
+          onPress={onStatus}
+          style={[s.action, desabilitado && s.disabled]}
+        >
+          <Text style={s.actionText}>
+            {operacao === "status"
+              ? "Atualizando…"
+              : ativo
+                ? "Inativar"
+                : "Ativar"}
+          </Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Excluir ${produto.descricao_produto}`}
+          disabled={desabilitado}
+          onPress={onExcluir}
+          style={[s.action, desabilitado && s.disabled]}
+        >
+          <Text style={s.danger}>
+            {operacao === "excluir" ? "Excluindo…" : "Excluir"}
+          </Text>
+        </Pressable>
+      </View>
       <View style={s.dates}>
         <Text style={s.date}>Criado: {formatarData(produto.createdAt)}</Text>
         <Text style={s.date}>Alterado: {formatarData(produto.updatedAt)}</Text>
@@ -46,6 +111,21 @@ export default function ProdutoCard({ produto }: { produto: Produto }) {
   );
 }
 const s = StyleSheet.create({
+  actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 16 },
+  action: {
+    flex: 1,
+    minWidth: 75,
+    minHeight: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 9,
+    borderWidth: 1,
+    borderColor: "#dbe4ea",
+    borderRadius: 9,
+  },
+  actionText: { fontSize: 13, fontWeight: "600", color: "#137c65" },
+  danger: { fontSize: 13, fontWeight: "600", color: "#a52b38" },
+  disabled: { opacity: 0.45 },
   card: {
     backgroundColor: "white",
     borderWidth: 1,

@@ -1,3 +1,5 @@
+import { Link, useLocalSearchParams } from "expo-router";
+import AvisoProdutoCriado from "@/components/produtos/AvisoProdutoCriado";
 import {
   ActivityIndicator,
   FlatList,
@@ -15,6 +17,14 @@ import ResumoProdutos from "@/components/produtos/ResumoProdutos";
 import { useProdutos } from "@/hooks/useProdutos";
 import { useSaidaConta } from "@/hooks/useSaidaConta";
 export default function HomeScreen() {
+  const { criado } = useLocalSearchParams<{ criado?: string }>();
+  const criacao = typeof criado === "string" ? criado : "";
+  return (
+    <CatalogoScreen key={criacao || "catalogo"} mostrarAviso={!!criacao} />
+  );
+}
+
+function CatalogoScreen({ mostrarAviso }: { mostrarAviso: boolean }) {
   const catalogo = useProdutos();
   const { saindo, confirmarSaida } = useSaidaConta(catalogo.cancelar);
   return (
@@ -48,6 +58,16 @@ export default function HomeScreen() {
             <Text style={s.description}>
               Este catálogo é exclusivo da sua conta.
             </Text>
+            {mostrarAviso && <AvisoProdutoCriado />}
+            <Link href="/produtos/novo" asChild>
+              <Pressable
+                accessibilityRole="button"
+                disabled={saindo}
+                style={StyleSheet.flatten([s.newButton, saindo && s.disabled])}
+              >
+                <Text style={s.newButtonText}>Novo produto</Text>
+              </Pressable>
+            </Link>
             <ResumoProdutos resumo={catalogo.resultado?.resumo} />
             <FiltrosProdutos
               busca={catalogo.busca}
@@ -124,6 +144,16 @@ export default function HomeScreen() {
   );
 }
 const s = StyleSheet.create({
+  newButton: {
+    backgroundColor: "#137c65",
+    padding: 14,
+    minHeight: 48,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+  newButtonText: { color: "white", fontWeight: "600", fontSize: 16 },
   screen: { flex: 1, backgroundColor: "#f5f7f9" },
   content: { flexGrow: 1, padding: 20, paddingBottom: 36 },
   header: {

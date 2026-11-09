@@ -11,13 +11,8 @@ import {
 
 import { useFotoProduto } from '@/hooks/useFotoProduto';
 import { ApiError } from '@/lib/api';
-import type { FotoProduto } from '@/types/foto';
-
-export type DadosProdutoForm = {
-  codigo_produto: string;
-  descricao_produto: string;
-  foto: FotoProduto | null;
-};
+import type { DadosProdutoForm } from '@/types/produto';
+export type { DadosProdutoForm } from '@/types/produto';
 
 type Props = {
   onSalvar: (dados: DadosProdutoForm) => Promise<void>;

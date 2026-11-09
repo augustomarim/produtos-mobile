@@ -1,3 +1,5 @@
+import type { FotoProduto } from "./foto";
+
 export type Produto = {
   id: number;
   codigo_produto: string;
@@ -16,4 +18,10 @@ export type PaginaProdutos = {
   paginas: number;
   limite: number;
   resumo: { total: number; ativos: number; inativos: number };
+};
+
+export type DadosProdutoForm = {
+  codigo_produto: string;
+  descricao_produto: string;
+  foto: FotoProduto | null;
 };

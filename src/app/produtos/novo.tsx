@@ -1,6 +1,5 @@
 import { useRef, useState } from "react";
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -8,7 +7,11 @@ import {
   Text,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Stack, usePreventRemove, useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
+import {
+  useProtecaoFormulario,
+  type EstadoFormulario,
+} from "@/hooks/useProtecaoFormulario";
 import ProdutoForm from "@/components/produtos/ProdutoForm";
 import { useAuth } from "@/contexts/AuthContext";
 import { criarProduto } from "@/lib/produtos";
@@ -19,14 +22,13 @@ export default function NovoProdutoScreen() {
   const { requisicao, estado } = useAuth();
   const [enviando, setEnviando] = useState(false);
   const envioEmAndamento = useRef(false);
-  const desativarBloqueio = usePreventRemove(
-    enviando && estado === "autenticado",
-    () => {
-      Alert.alert(
-        "Salvando produto",
-        "Aguarde a conclusão antes de sair desta tela.",
-      );
-    },
+  const [formulario, setFormulario] = useState<EstadoFormulario>({
+    alterado: false,
+    ocupado: false,
+  });
+  const desativarBloqueio = useProtecaoFormulario(
+    { ...formulario, ocupado: formulario.ocupado || enviando },
+    estado === "autenticado",
   );
 
   function voltar() {
@@ -85,6 +87,7 @@ export default function NovoProdutoScreen() {
             criado como ativo na sua conta.
           </Text>
           <ProdutoForm
+            onEstadoChange={setFormulario}
             onSalvar={salvar}
             onCancelar={voltar}
             textoBotao="Criar produto"

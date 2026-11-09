@@ -1,3 +1,4 @@
+import { Link, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -13,6 +14,10 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/contexts/AuthContext";
 export default function LoginScreen() {
+  const { cadastro } = useLocalSearchParams<{ cadastro?: string }>();
+  return <FormularioLogin key={cadastro || "login"} contaCriada={!!cadastro} />;
+}
+function FormularioLogin({ contaCriada }: { contaCriada: boolean }) {
   const { estado, erroInicial, entrar, tentarNovamente } = useAuth();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -76,6 +81,11 @@ export default function LoginScreen() {
             conta.
           </Text>
           <View style={s.card}>
+            {contaCriada && (
+              <Text accessibilityRole="alert" style={s.description}>
+                Conta criada com sucesso. Entre com seu email e senha.
+              </Text>
+            )}
             <Text style={s.label}>Email</Text>
             <TextInput
               accessibilityLabel="Email"
@@ -132,6 +142,17 @@ export default function LoginScreen() {
               Aqui você usa sua conta do catálogo, não sua conta da Expo ou do
               GitHub.
             </Text>
+            <Link href="/cadastro" asChild>
+              <Pressable
+                accessibilityRole="button"
+                disabled={enviando}
+                style={{ padding: 16, alignItems: "center", minHeight: 48 }}
+              >
+                <Text style={{ color: "#137c65", fontWeight: "600" }}>
+                  Criar conta
+                </Text>
+              </Pressable>
+            </Link>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

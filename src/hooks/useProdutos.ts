@@ -1,7 +1,8 @@
 import { useFocusEffect } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import type { FiltroStatus, PaginaProdutos } from "@/types/produto";
+import { sincronizarPagina } from "@/lib/selecaoProdutos";
+import type { Produto, FiltroStatus, PaginaProdutos } from "@/types/produto";
 
 type Consulta = { pagina: number; busca: string; filtro: FiltroStatus };
 
@@ -15,6 +16,8 @@ export function useProdutos() {
   });
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
+  const [revisao, setRevisao] = useState(0);
+  const revisaoAtual = useRef(0);
   const requisicaoAtual = useRef<AbortController | null>(null);
 
   // Refaz a consulta ao voltar de outra tela e cancela pedidos ao perder foco.
@@ -31,7 +34,11 @@ export function useProdutos() {
           { signal: controller.signal },
         )
           .then((dados) => {
-            if (!ativo || controller.signal.aborted) return;
+            if (
+              !ativo ||
+              controller.signal.aborted ||
+              revisao !== revisaoAtual.current
+            ) return;
             if (!dados || !Array.isArray(dados.produtos))
               throw new Error(
                 "O servidor retornou uma lista de produtos inválida.",
@@ -49,7 +56,7 @@ export function useProdutos() {
               );
           })
           .finally(() => {
-            if (ativo) setCarregando(false);
+            if (ativo && revisao === revisaoAtual.current) setCarregando(false);
           });
       }, 250);
       return () => {
@@ -59,7 +66,7 @@ export function useProdutos() {
         if (requisicaoAtual.current === controller)
           requisicaoAtual.current = null;
       };
-    }, [consulta, requisicao]),
+    }, [consulta, requisicao, revisao]),
   );
 
   const cancelar = useCallback(() => {
@@ -77,8 +84,10 @@ export function useProdutos() {
     if (carregando) return;
     setErro("");
     setCarregando(true);
-    // Nova consulta, mesmo quando os critérios continuam iguais.
-    setConsulta((atual) => ({ ...atual }));
+    // Uma revisão explícita refaz a consulta mesmo com critérios iguais.
+    // Também impede que uma resposta anterior substitua a atualização local.
+    revisaoAtual.current += 1;
+    setRevisao(revisaoAtual.current);
   }
   function mudarPagina(pagina: number) {
     if (
@@ -92,11 +101,30 @@ export function useProdutos() {
     setCarregando(true);
     setConsulta((atual) => ({ ...atual, pagina }));
   }
+  function aplicarAlteracao({
+    atualizados = [],
+    excluidos = [],
+  }: {
+    atualizados?: Produto[];
+    excluidos?: number[];
+  }) {
+    setResultado((anterior) =>
+      anterior
+        ? sincronizarPagina(anterior, atualizados, excluidos, consulta.filtro)
+        : anterior,
+    );
+    setCarregando(true);
+    setErro("");
+    revisaoAtual.current += 1;
+    setRevisao(revisaoAtual.current);
+  }
   return {
+    aplicarAlteracao,
     resultado,
     produtos: resultado?.produtos ?? [],
     carregando,
     erro,
+    pagina: consulta.pagina,
     busca: consulta.busca,
     filtro: consulta.filtro,
     filtrando: !!consulta.busca.trim() || consulta.filtro !== "todos",

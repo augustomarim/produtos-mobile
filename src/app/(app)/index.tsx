@@ -14,6 +14,11 @@ import FiltrosProdutos from "@/components/produtos/FiltrosProdutos";
 import PaginacaoProdutos from "@/components/produtos/PaginacaoProdutos";
 import ProdutoCard from "@/components/produtos/ProdutoCard";
 import ResumoProdutos from "@/components/produtos/ResumoProdutos";
+import CheckboxProduto from "@/components/produtos/CheckboxProduto";
+import AcoesLoteProdutos from "@/components/produtos/AcoesLoteProdutos";
+import { useSelecaoProdutos } from "@/hooks/useSelecaoProdutos";
+import { useAcoesProdutos } from "@/hooks/useAcoesProdutos";
+import { BottomTabInset } from "@/constants/theme";
 import { useProdutos } from "@/hooks/useProdutos";
 import { useSaidaConta } from "@/hooks/useSaidaConta";
 export default function HomeScreen() {
@@ -27,18 +32,40 @@ export default function HomeScreen() {
 function CatalogoScreen({ mostrarAviso }: { mostrarAviso: boolean }) {
   const catalogo = useProdutos();
   const { saindo, confirmarSaida } = useSaidaConta(catalogo.cancelar);
+  const selecao = useSelecaoProdutos(catalogo.produtos);
+  const acoes = useAcoesProdutos(
+    catalogo.produtos,
+    selecao.ids,
+    selecao.limpar,
+    catalogo.aplicarAlteracao,
+  );
+  const ocupado = saindo || acoes.ocupado;
+  const bloqueado = ocupado || catalogo.carregando;
   return (
     <SafeAreaView style={s.screen} edges={["top", "left", "right"]}>
       <FlatList
         data={catalogo.produtos}
         keyExtractor={(p) => String(p.id)}
-        renderItem={({ item }) => <ProdutoCard produto={item} />}
+        style={{ flex: 1 }}
+        renderItem={({ item }) => (
+          <ProdutoCard
+            produto={item}
+            selecionado={selecao.ids.has(item.id)}
+            desabilitado={bloqueado}
+            operacao={
+              acoes.pendente?.id === item.id ? acoes.pendente.acao : undefined
+            }
+            onSelecionar={() => selecao.marcar(item.id)}
+            onStatus={() => void acoes.individual(item, "status")}
+            onExcluir={() => void acoes.individual(item, "excluir")}
+          />
+        )}
         contentContainerStyle={s.content}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
         refreshing={catalogo.carregando}
         onRefresh={() => {
-          if (!saindo) catalogo.atualizar();
+          if (!ocupado) catalogo.atualizar();
         }}
         ListHeaderComponent={
           <View>
@@ -46,10 +73,10 @@ function CatalogoScreen({ mostrarAviso }: { mostrarAviso: boolean }) {
               <Text style={s.eyebrow}>PRODUTOS MOBILE</Text>
               <Pressable
                 accessibilityRole="button"
-                accessibilityState={{ disabled: saindo, busy: saindo }}
-                disabled={saindo}
+                accessibilityState={{ disabled: ocupado, busy: saindo }}
+                disabled={ocupado}
                 onPress={confirmarSaida}
-                style={[s.button, saindo && s.disabled]}
+                style={[s.button, ocupado && s.disabled]}
               >
                 <Text style={s.logout}>{saindo ? "Saindo…" : "Sair"}</Text>
               </Pressable>
@@ -62,8 +89,8 @@ function CatalogoScreen({ mostrarAviso }: { mostrarAviso: boolean }) {
             <Link href="/produtos/novo" asChild>
               <Pressable
                 accessibilityRole="button"
-                disabled={saindo}
-                style={StyleSheet.flatten([s.newButton, saindo && s.disabled])}
+                disabled={ocupado}
+                style={StyleSheet.flatten([s.newButton, ocupado && s.disabled])}
               >
                 <Text style={s.newButtonText}>Novo produto</Text>
               </Pressable>
@@ -72,8 +99,11 @@ function CatalogoScreen({ mostrarAviso }: { mostrarAviso: boolean }) {
             <FiltrosProdutos
               busca={catalogo.busca}
               filtro={catalogo.filtro}
-              desabilitado={saindo}
-              onAlterar={catalogo.alterarFiltros}
+              desabilitado={ocupado}
+              onAlterar={(...args) => {
+                selecao.limpar();
+                catalogo.alterarFiltros(...args);
+              }}
             />
             <View style={s.toolbar}>
               <Text style={s.hint}>
@@ -81,12 +111,9 @@ function CatalogoScreen({ mostrarAviso }: { mostrarAviso: boolean }) {
               </Text>
               <Pressable
                 accessibilityRole="button"
-                disabled={catalogo.carregando || saindo}
+                disabled={bloqueado}
                 onPress={catalogo.atualizar}
-                style={[
-                  s.button,
-                  (catalogo.carregando || saindo) && s.disabled,
-                ]}
+                style={[s.button, bloqueado && s.disabled]}
               >
                 <Text style={s.buttonText}>Atualizar</Text>
               </Pressable>
@@ -105,6 +132,18 @@ function CatalogoScreen({ mostrarAviso }: { mostrarAviso: boolean }) {
                 <Text style={s.hint}>Atualizando produtos…</Text>
               </View>
             )}
+            {catalogo.produtos.length > 0 && (
+              <View style={s.toolbar}>
+                <CheckboxProduto
+                  label="Selecionar todos nesta página"
+                  marcado={selecao.todos}
+                  parcial={selecao.parcial}
+                  desabilitado={bloqueado}
+                  onPress={selecao.marcarTodos}
+                />
+                <Text style={s.hint}>Selecionar esta página</Text>
+              </View>
+            )}
             {!!catalogo.erro && (
               <View style={s.errorBox}>
                 <Text accessibilityRole="alert" style={s.error}>
@@ -112,7 +151,7 @@ function CatalogoScreen({ mostrarAviso }: { mostrarAviso: boolean }) {
                 </Text>
                 <Pressable
                   accessibilityRole="button"
-                  disabled={catalogo.carregando || saindo}
+                  disabled={bloqueado}
                   onPress={catalogo.atualizar}
                   style={s.retry}
                 >
@@ -134,11 +173,21 @@ function CatalogoScreen({ mostrarAviso }: { mostrarAviso: boolean }) {
             <PaginacaoProdutos
               pagina={catalogo.resultado.pagina}
               paginas={catalogo.resultado.paginas}
-              desabilitado={catalogo.carregando || saindo}
-              onMudar={catalogo.mudarPagina}
+              desabilitado={bloqueado}
+              onMudar={(pagina) => {
+                selecao.limpar();
+                catalogo.mudarPagina(pagina);
+              }}
             />
           ) : undefined
         }
+      />
+      <AcoesLoteProdutos
+        selecionados={catalogo.produtos.filter((p) => selecao.ids.has(p.id))}
+        desabilitado={bloqueado}
+        acao={acoes.lote}
+        onAcao={(acao) => void acoes.executarLote(acao)}
+        onLimpar={selecao.limpar}
       />
     </SafeAreaView>
   );
@@ -155,7 +204,7 @@ const s = StyleSheet.create({
   },
   newButtonText: { color: "white", fontWeight: "600", fontSize: 16 },
   screen: { flex: 1, backgroundColor: "#f5f7f9" },
-  content: { flexGrow: 1, padding: 20, paddingBottom: 36 },
+  content: { flexGrow: 1, padding: 20, paddingBottom: BottomTabInset + 24 },
   header: {
     flexDirection: "row",
     alignItems: "center",

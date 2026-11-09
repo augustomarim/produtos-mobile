@@ -25,3 +25,13 @@ export type DadosProdutoForm = {
   descricao_produto: string;
   foto: FotoProduto | null;
 };
+
+export type ResultadoLote = {
+  solicitados: number;
+  afetados: number;
+  jaNoStatus?: number;
+  naoEncontrados?: number;
+  produtos?: Produto[];
+  idsExcluidos?: number[];
+  fotosNaoRemovidas?: number;
+};

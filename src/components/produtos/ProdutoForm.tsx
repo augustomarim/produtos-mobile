@@ -1,18 +1,19 @@
-import { useRef, useState, type ComponentRef } from 'react';
+import { useEffect, useRef, useState, type ComponentRef } from "react";
 import {
-    ActivityIndicator,
-    Image,
-    Pressable,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
-} from 'react-native';
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
-import { useFotoProduto } from '@/hooks/useFotoProduto';
-import { ApiError } from '@/lib/api';
-import type { DadosProdutoForm } from '@/types/produto';
-export type { DadosProdutoForm } from '@/types/produto';
+import ImagemProduto from "./ImagemProduto";
+import type { EstadoFormulario } from "@/hooks/useProtecaoFormulario";
+import { useFotoProduto } from "@/hooks/useFotoProduto";
+import { ApiError } from "@/lib/api";
+import type { DadosProdutoForm } from "@/types/produto";
+export type { DadosProdutoForm } from "@/types/produto";
 
 type Props = {
   onSalvar: (dados: DadosProdutoForm) => Promise<void>;
@@ -20,6 +21,9 @@ type Props = {
   codigoInicial?: string;
   descricaoInicial?: string;
   textoBotao?: string;
+  fotoAtual?: string | null;
+  onRemoverFoto?: () => Promise<void>;
+  onEstadoChange?: (estado: EstadoFormulario) => void;
 };
 
 type ErrosCampos = {
@@ -31,29 +35,54 @@ type ErrosCampos = {
 export default function ProdutoForm({
   onSalvar,
   onCancelar,
-  codigoInicial = '',
-  descricaoInicial = '',
-  textoBotao = 'Salvar produto',
+  codigoInicial = "",
+  descricaoInicial = "",
+  textoBotao = "Salvar produto",
+  fotoAtual,
+  onRemoverFoto,
+  onEstadoChange,
 }: Props) {
   const [codigo, setCodigo] = useState(codigoInicial);
   const [descricao, setDescricao] = useState(descricaoInicial);
   const [erros, setErros] = useState<ErrosCampos>({});
-  const [erroGeral, setErroGeral] = useState('');
+  const [erroGeral, setErroGeral] = useState("");
   const [salvando, setSalvando] = useState(false);
 
   const codigoRef = useRef<ComponentRef<typeof TextInput>>(null);
   const descricaoRef = useRef<ComponentRef<typeof TextInput>>(null);
   const envioEmAndamento = useRef(false);
 
-  const {
-    foto,
-    erroFoto,
-    preparandoFoto,
-    escolherFoto,
-    limparFoto,
-  } = useFotoProduto();
+  const { foto, erroFoto, preparandoFoto, escolherFoto, limparFoto } =
+    useFotoProduto();
 
-  const ocupado = salvando || preparandoFoto;
+  const [removendoFoto, setRemovendoFoto] = useState(false);
+  const ocupado = salvando || preparandoFoto || removendoFoto;
+  const alterado =
+    codigo !== codigoInicial ||
+    descricao !== descricaoInicial ||
+    foto !== null ||
+    !!erroFoto;
+  useEffect(() => {
+    onEstadoChange?.({ alterado, ocupado });
+  }, [alterado, ocupado, onEstadoChange]);
+  async function removerFotoAtual() {
+    if (envioEmAndamento.current || ocupado || !onRemoverFoto) return;
+    envioEmAndamento.current = true;
+    setRemovendoFoto(true);
+    setErroGeral("");
+    try {
+      await onRemoverFoto();
+    } catch (error) {
+      setErroGeral(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível remover a foto.",
+      );
+    } finally {
+      envioEmAndamento.current = false;
+      setRemovendoFoto(false);
+    }
+  }
   const mensagemFoto = erroFoto || erros.foto;
 
   function focarPrimeiroErro(campos: ErrosCampos) {
@@ -67,18 +96,18 @@ export default function ProdutoForm({
   }
 
   async function salvar() {
-    if (envioEmAndamento.current || preparandoFoto) return;
+    if (envioEmAndamento.current || preparandoFoto || removendoFoto) return;
 
-    setErroGeral('');
+    setErroGeral("");
 
     const novosErros: ErrosCampos = {};
 
     if (!codigo.trim()) {
-      novosErros.codigo = 'Informe o código do produto.';
+      novosErros.codigo = "Informe o código do produto.";
     }
 
     if (!descricao.trim()) {
-      novosErros.descricao = 'Informe a descrição do produto.';
+      novosErros.descricao = "Informe a descrição do produto.";
     }
 
     if (mensagemFoto) {
@@ -106,27 +135,26 @@ export default function ProdutoForm({
         const errosApi: ErrosCampos = {};
 
         for (const detalhe of error.details) {
-          if (detalhe.field === 'codigo_produto') {
+          if (detalhe.field === "codigo_produto") {
             errosApi.codigo = detalhe.message;
           }
 
-          if (detalhe.field === 'descricao_produto') {
+          if (detalhe.field === "descricao_produto") {
             errosApi.descricao = detalhe.message;
           }
 
-          if (detalhe.field === 'foto_produto') {
+          if (detalhe.field === "foto_produto") {
             errosApi.foto = detalhe.message;
           }
         }
 
         if (error.status === 409) {
-          errosApi.codigo =
-            'Este código já está sendo usado na sua conta.';
+          errosApi.codigo = "Este código já está sendo usado na sua conta.";
         }
 
         if (error.status === 413) {
           errosApi.foto =
-            'A foto excede o tamanho permitido. Escolha outra imagem.';
+            "A foto excede o tamanho permitido. Escolha outra imagem.";
         }
 
         if (Object.keys(errosApi).length > 0) {
@@ -139,7 +167,7 @@ export default function ProdutoForm({
       setErroGeral(
         error instanceof Error
           ? error.message
-          : 'Não foi possível salvar o produto. Tente novamente.'
+          : "Não foi possível salvar o produto. Tente novamente.",
       );
     } finally {
       envioEmAndamento.current = false;
@@ -148,7 +176,7 @@ export default function ProdutoForm({
   }
 
   async function selecionarFoto() {
-    if (envioEmAndamento.current || preparandoFoto) return;
+    if (envioEmAndamento.current || preparandoFoto || removendoFoto) return;
 
     setErros((anteriores) => ({
       ...anteriores,
@@ -171,9 +199,7 @@ export default function ProdutoForm({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.hint}>
-        Os campos com * são obrigatórios.
-      </Text>
+      <Text style={styles.hint}>Os campos com * são obrigatórios.</Text>
 
       <View style={styles.field}>
         <Text style={styles.label}>Código *</Text>
@@ -185,7 +211,7 @@ export default function ProdutoForm({
           value={codigo}
           onChangeText={(valor) => {
             setCodigo(valor);
-            setErroGeral('');
+            setErroGeral("");
 
             setErros((anteriores) => ({
               ...anteriores,
@@ -199,10 +225,7 @@ export default function ProdutoForm({
           placeholderTextColor="#83939e"
           returnKeyType="next"
           onSubmitEditing={() => descricaoRef.current?.focus()}
-          style={[
-            styles.input,
-            !!erros.codigo && styles.inputError,
-          ]}
+          style={[styles.input, !!erros.codigo && styles.inputError]}
         />
 
         {!!erros.codigo && (
@@ -222,7 +245,7 @@ export default function ProdutoForm({
           value={descricao}
           onChangeText={(valor) => {
             setDescricao(valor);
-            setErroGeral('');
+            setErroGeral("");
 
             setErros((anteriores) => ({
               ...anteriores,
@@ -258,30 +281,29 @@ export default function ProdutoForm({
 
         {foto ? (
           <View>
-            <Image
-              accessibilityLabel="Pré-visualização da foto selecionada"
-              source={{ uri: foto.uri }}
+            <ImagemProduto
+              uri={foto.uri}
+              nome="Pré-visualização da foto selecionada"
               style={styles.preview}
-              resizeMode="contain"
             />
-
             <Text style={styles.photoInfo}>
-              Foto preparada ·{' '}
-              {(foto.tamanho / (1024 * 1024))
-                .toFixed(2)
-                .replace('.', ',')}{' '}
-              MB
+              Foto preparada ·{" "}
+              {(foto.tamanho / (1024 * 1024)).toFixed(2).replace(".", ",")} MB
             </Text>
           </View>
+        ) : fotoAtual ? (
+          <ImagemProduto
+            uri={fotoAtual}
+            nome="Foto atual do produto"
+            style={styles.preview}
+          />
         ) : (
           <View
             accessible
             accessibilityLabel="Nenhuma foto selecionada"
             style={styles.placeholder}
           >
-            <Text style={styles.placeholderText}>
-              Nenhuma foto selecionada
-            </Text>
+            <Text style={styles.placeholderText}>Nenhuma foto selecionada</Text>
           </View>
         )}
 
@@ -299,18 +321,15 @@ export default function ProdutoForm({
           ]}
         >
           {preparandoFoto && (
-            <ActivityIndicator
-              color="#137c65"
-              style={styles.spinner}
-            />
+            <ActivityIndicator color="#137c65" style={styles.spinner} />
           )}
 
           <Text style={styles.secondaryButtonText}>
             {preparandoFoto
-              ? 'Preparando foto…'
+              ? "Preparando foto…"
               : foto
-                ? 'Escolher outra foto'
-                : 'Escolher foto'}
+                ? "Escolher outra foto"
+                : "Escolher foto"}
           </Text>
         </Pressable>
 
@@ -319,19 +338,32 @@ export default function ProdutoForm({
             accessibilityRole="button"
             disabled={ocupado}
             onPress={removerSelecao}
-            style={[
-              styles.removeButton,
-              ocupado && styles.disabled,
-            ]}
+            style={[styles.removeButton, ocupado && styles.disabled]}
           >
             <Text style={styles.removeText}>
-              {foto
-                ? 'Remover foto selecionada'
-                : 'Remover seleção inválida'}
+              {foto ? "Remover foto selecionada" : "Remover seleção inválida"}
             </Text>
           </Pressable>
         )}
 
+        {!!fotoAtual && !foto && onRemoverFoto && (
+          <Pressable
+            accessibilityRole="button"
+            disabled={ocupado}
+            onPress={() => void removerFotoAtual()}
+            style={styles.removeButton}
+          >
+            <Text style={styles.removeText}>
+              {removendoFoto ? "Removendo foto…" : "Remover foto atual"}
+            </Text>
+          </Pressable>
+        )}
+        {!!fotoAtual && (
+          <Text style={styles.hint}>
+            A remoção da foto atual é imediata. Uma nova foto só é enviada ao
+            salvar.
+          </Text>
+        )}
         {!!mensagemFoto && (
           <Text accessibilityRole="alert" style={styles.fieldError}>
             {mensagemFoto}
@@ -361,14 +393,11 @@ export default function ProdutoForm({
         ]}
       >
         {salvando && (
-          <ActivityIndicator
-            color="#ffffff"
-            style={styles.spinner}
-          />
+          <ActivityIndicator color="#ffffff" style={styles.spinner} />
         )}
 
         <Text style={styles.primaryButtonText}>
-          {salvando ? 'Salvando produto…' : textoBotao}
+          {salvando ? "Salvando produto…" : textoBotao}
         </Text>
       </Pressable>
 
@@ -392,9 +421,9 @@ export default function ProdutoForm({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     borderWidth: 1,
-    borderColor: '#e5eaef',
+    borderColor: "#e5eaef",
     borderRadius: 16,
     padding: 20,
   },
@@ -402,33 +431,33 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   label: {
-    color: '#182b3a',
+    color: "#182b3a",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 8,
   },
   hint: {
-    color: '#607483',
+    color: "#607483",
     fontSize: 13,
     lineHeight: 20,
   },
   input: {
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     borderWidth: 1,
-    borderColor: '#ccd7df',
+    borderColor: "#ccd7df",
     borderRadius: 10,
     padding: 14,
-    color: '#182b3a',
+    color: "#182b3a",
     fontSize: 16,
   },
   inputError: {
-    borderColor: '#b42333',
+    borderColor: "#b42333",
   },
   textarea: {
     minHeight: 110,
   },
   fieldError: {
-    color: '#b42333',
+    color: "#b42333",
     fontSize: 13,
     lineHeight: 20,
     marginTop: 8,
@@ -438,14 +467,14 @@ const styles = StyleSheet.create({
     marginBottom: 28,
   },
   preview: {
-    width: '100%',
+    width: "100%",
     height: 220,
     borderRadius: 10,
-    backgroundColor: '#f0f4f7',
+    backgroundColor: "#f0f4f7",
     marginTop: 16,
   },
   photoInfo: {
-    color: '#607483',
+    color: "#607483",
     fontSize: 12,
     marginTop: 8,
     marginBottom: 14,
@@ -453,68 +482,68 @@ const styles = StyleSheet.create({
   placeholder: {
     height: 150,
     borderRadius: 10,
-    backgroundColor: '#f0f4f7',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#f0f4f7",
+    alignItems: "center",
+    justifyContent: "center",
     marginTop: 16,
     marginBottom: 14,
   },
   placeholderText: {
-    color: '#607483',
+    color: "#607483",
     fontSize: 14,
   },
   primaryButton: {
-    backgroundColor: '#137c65',
+    backgroundColor: "#137c65",
     minHeight: 48,
     borderRadius: 10,
     padding: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
   },
   primaryButtonText: {
-    color: '#ffffff',
+    color: "#ffffff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   secondaryButton: {
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     borderWidth: 1,
-    borderColor: '#ccd7df',
+    borderColor: "#ccd7df",
     minHeight: 48,
     borderRadius: 10,
     padding: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
   },
   secondaryButtonText: {
-    color: '#137c65',
+    color: "#137c65",
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   cancelButton: {
     marginTop: 12,
   },
   removeButton: {
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
     minHeight: 44,
-    justifyContent: 'center',
+    justifyContent: "center",
     marginTop: 4,
   },
   removeText: {
-    color: '#b42333',
+    color: "#b42333",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   errorBox: {
-    backgroundColor: '#fff0f0',
+    backgroundColor: "#fff0f0",
     borderRadius: 10,
     padding: 14,
     marginBottom: 20,
   },
   errorText: {
-    color: '#a52b38',
+    color: "#a52b38",
     fontSize: 14,
     lineHeight: 21,
   },

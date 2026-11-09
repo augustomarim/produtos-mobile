@@ -28,3 +28,66 @@ export async function criarProduto(
     body: montarFormularioProduto(dados),
   });
 }
+
+function idValido(id: number) {
+  if (!Number.isInteger(id) || id <= 0 || id > 2147483647)
+    throw new Error("Produto inválido. Volte ao catálogo.");
+  return id;
+}
+function idsValidos(ids: number[]) {
+  if (!ids.length || ids.length > 100)
+    throw new Error("Selecione entre 1 e 100 produtos.");
+  ids.forEach(idValido);
+  return [...new Set(ids)];
+}
+export function buscarProduto(
+  id: number,
+  requisicao: Requisicao,
+  signal?: AbortSignal,
+) {
+  return requisicao<Produto>(`/produtos/${idValido(id)}`, { signal });
+}
+export function editarProduto(
+  id: number,
+  dados: DadosProdutoForm,
+  requisicao: Requisicao,
+) {
+  return requisicao<Produto>(`/produtos/${idValido(id)}`, {
+    method: "PUT",
+    body: montarFormularioProduto(dados),
+  });
+}
+export function removerFotoProduto(id: number, requisicao: Requisicao) {
+  return requisicao<Produto>(`/produtos/${idValido(id)}/foto`, {
+    method: "DELETE",
+  });
+}
+export function alterarStatusProduto(id: number, requisicao: Requisicao) {
+  return requisicao<Produto>(`/produtos/${idValido(id)}/status`, {
+    method: "PATCH",
+  });
+}
+export function excluirProduto(id: number, requisicao: Requisicao) {
+  return requisicao<void>(`/produtos/${idValido(id)}`, { method: "DELETE" });
+}
+export function alterarStatusLote(
+  ids: number[],
+  status: Produto["status"],
+  requisicao: Requisicao,
+) {
+  return requisicao<import("@/types/produto").ResultadoLote>(
+    "/produtos/status",
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: idsValidos(ids), status }),
+    },
+  );
+}
+export function excluirProdutosLote(ids: number[], requisicao: Requisicao) {
+  return requisicao<import("@/types/produto").ResultadoLote>("/produtos", {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ids: idsValidos(ids) }),
+  });
+}

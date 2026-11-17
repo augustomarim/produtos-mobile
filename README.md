@@ -162,3 +162,33 @@ npx expo start --clear
 
 O `.env` local permanece ignorado. Esta etapa não exige migração, mudança no
 backend, Render ou Vercel.
+
+## Notificações internas (compatíveis com Expo Go)
+
+O botão **Notificações** no catálogo exibe a contagem não lida e abre uma tela
+protegida. Ela mostra nome/código, última operação, origem e dia/horário no fuso
+do aparelho. Em edições, mostra os campos alterados: código, descrição, imagem,
+ativado/inativado, sem guardar ou mostrar valores anteriores.
+
+- Criação também gera aviso. Cada produto tem somente um snapshot: editar e
+  depois excluir deixa somente o aviso de exclusão.
+- Alterações feitas no site chegam não lidas ao mobile; ações feitas no próprio
+  aplicativo ficam lidas nele e não lidas no web.
+- A leitura é por plataforma, por item ou página e protegida pela revisão da
+  notificação. Uma marcação atrasada não apaga uma nova alteração.
+- Há paginação de 50 itens. Ao abrir/voltar ao aplicativo, as consultas são
+  renovadas; a central consulta a cada 30 segundos enquanto o app está ativo.
+  Ao voltar ao catálogo ou trazer o app ao primeiro plano, os produtos também
+  são consultados novamente. Não há consultas periódicas em segundo plano.
+- Cada usuário vê somente seus próprios avisos. Logout limpa a central.
+
+Arquivos principais: `src/contexts/NotificacoesContext.tsx`,
+`src/app/notificacoes.tsx`, `src/components/NotificacoesBotao.tsx` e
+`src/lib/notificacoes.ts`. A comunicação HTTP identifica a origem com
+`X-App-Origin: mobile`; a autorização continua pelo JWT.
+
+Antes de usar, integre a branch `codex/notificacoes` do backend e aplique a migração
+`20261117000000_notificacoes` no Render. Depois integre esta branch em `main`,
+faça pull e reinicie com `npx expo start --clear`. Sem novas dependências,
+variáveis ou permissões. Não é necessário build EAS ou Apple Developer.
+Não há push: se o aplicativo estiver fechado, os avisos são consultados ao abrir.

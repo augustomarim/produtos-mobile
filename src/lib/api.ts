@@ -18,6 +18,7 @@ export async function api<T>(
   if (!API_URL)
     throw new Error("Configure EXPO_PUBLIC_API_URL no .env e reinicie o Expo.");
   const headers = new Headers(opcoes.headers);
+  headers.set("X-App-Origin", "mobile");
   if (token) headers.set("Authorization", `Bearer ${token}`);
   if (typeof opcoes.body === "string" && !headers.has("Content-Type"))
     headers.set("Content-Type", "application/json");

@@ -25,6 +25,9 @@ export default function NotificacoesScreen() {
     atualizar,
     marcarLidas,
     mudarPagina,
+    conexao,
+    som,
+    alternarSom,
   } = useNotificacoes();
   useFocusEffect(
     useCallback(() => {
@@ -56,10 +59,26 @@ export default function NotificacoesScreen() {
           <View>
             <Text style={s.title}>Suas notificações</Text>
             <Text style={s.hint}>
-              Histórico das operações feitas no site. As ações feitas neste
-              aplicativo aparecem somente no web.
+              Histórico completo do site e do aplicativo. Som e avisos
+              flutuantes são exibidos somente para ações feitas no site.
             </Text>
-            <Text style={s.hint}>{dados?.naoLidas || 0} não lidas</Text>
+            <Text style={s.hint}>
+              {dados?.naoLidas || 0} não lidas ·{" "}
+              {conexao === "conectado"
+                ? "Em tempo real"
+                : conexao === "conectando"
+                  ? "Conectando…"
+                  : "Reconectando…"}
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={alternarSom}
+              style={s.button}
+            >
+              <Text style={s.buttonText}>
+                {som ? "Silenciar notificações" : "Ativar som das notificações"}
+              </Text>
+            </Pressable>
             <View style={s.actions}>
               <Pressable
                 accessibilityRole="button"

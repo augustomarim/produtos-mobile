@@ -1,5 +1,5 @@
 import { Link } from "expo-router";
-import { Pressable, StyleSheet, Text } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useNotificacoes } from "@/contexts/NotificacoesContext";
 export default function NotificacoesBotao() {
   const { dados, erro } = useNotificacoes();
@@ -11,14 +11,27 @@ export default function NotificacoesBotao() {
         accessibilityLabel={`Notificações${total ? `, ${total} não lidas` : ""}`}
         style={s.button}
       >
-        <Text style={s.text}>
-          Notificações {total ? `(${total})` : erro ? "· !" : ""}
-        </Text>
+        <Text style={s.text}>🔔 Notificações {erro ? "· !" : ""}</Text>
+        {total > 0 && (
+          <View style={s.badge}>
+            <Text style={s.count}>{total > 99 ? "99+" : total}</Text>
+          </View>
+        )}
       </Pressable>
     </Link>
   );
 }
 const s = StyleSheet.create({
+  badge: {
+    backgroundColor: "#d33045",
+    minWidth: 22,
+    height: 22,
+    paddingHorizontal: 5,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  count: { color: "white", fontSize: 11, fontWeight: "700" },
   button: {
     minHeight: 48,
     borderWidth: 1,
@@ -29,6 +42,8 @@ const s = StyleSheet.create({
     justifyContent: "center",
     padding: 12,
     marginBottom: 16,
+    flexDirection: "row",
+    gap: 8,
   },
   text: { fontSize: 15, fontWeight: "600", color: "#137c65" },
 });

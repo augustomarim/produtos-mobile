@@ -56,8 +56,8 @@ export default function NotificacoesScreen() {
           <View>
             <Text style={s.title}>Suas notificações</Text>
             <Text style={s.hint}>
-              Última operação de cada produto. Alterações feitas no site
-              aparecem aqui.
+              Histórico das operações feitas no site. As ações feitas neste
+              aplicativo aparecem somente no web.
             </Text>
             <Text style={s.hint}>{dados?.naoLidas || 0} não lidas</Text>
             <View style={s.actions}>

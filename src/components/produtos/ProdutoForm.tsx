@@ -8,11 +8,12 @@ import {
   View,
 } from "react-native";
 
-import ImagemProduto from "./ImagemProduto";
-import type { EstadoFormulario } from "@/hooks/useProtecaoFormulario";
 import { useFotoProduto } from "@/hooks/useFotoProduto";
+import type { EstadoFormulario } from "@/hooks/useProtecaoFormulario";
 import { ApiError } from "@/lib/api";
 import type { DadosProdutoForm } from "@/types/produto";
+import React from "react";
+import ImagemProduto from "./ImagemProduto";
 export type { DadosProdutoForm } from "@/types/produto";
 
 type Props = {

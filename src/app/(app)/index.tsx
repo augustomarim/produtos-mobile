@@ -1,4 +1,5 @@
 import { Link, useLocalSearchParams } from "expo-router";
+import NotificacoesBotao from "@/components/NotificacoesBotao";
 import AvisoProdutoCriado from "@/components/produtos/AvisoProdutoCriado";
 import {
   ActivityIndicator,
@@ -95,6 +96,7 @@ function CatalogoScreen({ mostrarAviso }: { mostrarAviso: boolean }) {
                 <Text style={s.newButtonText}>Novo produto</Text>
               </Pressable>
             </Link>
+            <NotificacoesBotao />
             <ResumoProdutos resumo={catalogo.resultado?.resumo} />
             <FiltrosProdutos
               busca={catalogo.busca}

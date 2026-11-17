@@ -1,3 +1,4 @@
+import { AppState } from "react-native";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -38,7 +39,8 @@ export function useProdutos() {
               !ativo ||
               controller.signal.aborted ||
               revisao !== revisaoAtual.current
-            ) return;
+            )
+              return;
             if (!dados || !Array.isArray(dados.produtos))
               throw new Error(
                 "O servidor retornou uma lista de produtos inválida.",
@@ -67,6 +69,19 @@ export function useProdutos() {
           requisicaoAtual.current = null;
       };
     }, [consulta, requisicao, revisao]),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      const sub = AppState.addEventListener("change", (estado) => {
+        if (estado === "active") {
+          setCarregando(true);
+          revisaoAtual.current += 1;
+          setRevisao(revisaoAtual.current);
+        }
+      });
+      return () => sub.remove();
+    }, []),
   );
 
   const cancelar = useCallback(() => {

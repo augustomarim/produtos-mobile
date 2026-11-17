@@ -1,6 +1,7 @@
 import { AppState } from "react-native";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useRef, useState } from "react";
+import { useNotificacoes } from "@/contexts/NotificacoesContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { sincronizarPagina } from "@/lib/selecaoProdutos";
 import type { Produto, FiltroStatus, PaginaProdutos } from "@/types/produto";
@@ -9,6 +10,7 @@ type Consulta = { pagina: number; busca: string; filtro: FiltroStatus };
 
 export function useProdutos() {
   const { requisicao } = useAuth();
+  const { versaoCatalogo } = useNotificacoes();
   const [resultado, setResultado] = useState<PaginaProdutos | null>(null);
   const [consulta, setConsulta] = useState<Consulta>({
     pagina: 1,
@@ -82,6 +84,16 @@ export function useProdutos() {
       });
       return () => sub.remove();
     }, []),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (versaoCatalogo > 0) {
+        setCarregando(true);
+        revisaoAtual.current += 1;
+        setRevisao(revisaoAtual.current);
+      }
+    }, [versaoCatalogo]),
   );
 
   const cancelar = useCallback(() => {

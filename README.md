@@ -163,30 +163,38 @@ npx expo start --clear
 O `.env` local permanece ignorado. Esta etapa não exige migração, mudança no
 backend, Render ou Vercel.
 
-## Histórico de notificações internas (Expo Go)
+## Notificações em tempo real (Expo Go)
 
-O botão **Notificações** abre o histórico das operações feitas **no site**,
-exclusivamente na conta autenticada. Ações feitas neste aplicativo aparecem
-somente no web; não entram na lista, na contagem ou na paginação do mobile.
+O sino e contador vermelho abrem o histórico completo da conta, com todas as
+operações do web e mobile. Eventos são independentes, inclusive após exclusão,
+e mostram produto, campos alterados e dia/horário local.
 
-Cada criação, edição real, mudança de status, alteração de imagem e exclusão
-gera um evento independente com data/horário local. Editar → inativar → excluir
-mantém todos os avisos. Cada evento informa os campos alterados (código,
-descrição, imagem, ativado/inativado), sem mostrar valores anteriores.
-Marcar eventos como lidos não marca notificações posteriores do mesmo produto.
+- Ações do próprio mobile entram lidas no histórico, sem bubble nem som.
+- Ações do web geram bubble estilo celular, som e contador no mobile.
+- Bubble fecha pelo × ou após 10 segundos; lote usa um aviso de resumo.
+- Cada conta tem conexão e histórico privados. Logout desconecta e limpa avisos.
 
-O backend filtra conta e origem antes de contar/paginar (50 por página).
-A central atualiza ao abrir, voltar ao aplicativo e a cada 30 segundos enquanto
-ativo. A listagem também recarrega ao ganhar foco/voltar ao primeiro plano.
-Logout limpa a central. A comunicação identifica a origem com
-`X-App-Origin: mobile`; a autorização continua pelo JWT.
+Socket.IO/WebSocket recebe os eventos enquanto o app está ativo e atualiza
+catálogo e central sem precisar arrastar ou apertar Atualizar. A conexão é
+retomada automaticamente após queda; log/catálogo são consultados na reconexão.
+Formulários abertos não têm seus campos substituídos por eventos remotos.
+A central mostra estado da conexão e botão para silenciar/ativar o som.
 
-Antes de usar, integre `codex/historico-notificacoes` do backend e aplique
-`npx prisma migrate deploy` no ambiente do Render antes de iniciar a versão nova.
-A migração preserva os avisos existentes, mas não reconstrói edições já
-sobrescritas na implementação anterior. O histórico completo começa a ser
-acumulado a partir desta atualização.
+O áudio usa expo-audio do SDK 58 e um WAV local curto. Não solicita microfone
+nem ativa gravação ou reprodução em segundo plano. Respeita volume e modo
+silencioso do aparelho. O hook web separado evita inicializar mídia durante SSR.
+Não é push: com o aplicativo fechado/suspenso, os dados são sincronizados ao
+voltar. Continua compatível com Expo Go; não exige Apple Developer ou EAS.
 
-Depois integre esta branch em `main`, faça pull e reinicie com
-`npx expo start --clear`. Sem novas dependências, variáveis ou permissões.
-Não há push nem necessidade de build EAS ou Apple Developer.
+Depois de integrar `codex/notificacoes-tempo-real` do backend, integre esta
+branch em main, faça pull e execute:
+
+```bash
+npm ci
+npx expo start --clear
+```
+
+Mantenha EXPO_PUBLIC_API_URL com a URL pública HTTPS do Render. A conexão recebe
+um ticket curto pela API autenticada; não guarda o ticket nem o envia na URL.
+Não há variável ou migração nova nesta etapa. Confira no iPhone o som/volume,
+as bubbles, o contador e uma edição do web recebida sem atualizar manualmente.

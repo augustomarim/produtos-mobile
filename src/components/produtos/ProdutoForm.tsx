@@ -1,3 +1,4 @@
+import { criarEstilosProdutos } from "@/hooks/use-tema-produtos";
 import { useEffect, useRef, useState, type ComponentRef } from "react";
 import {
   ActivityIndicator,
@@ -43,6 +44,7 @@ export default function ProdutoForm({
   onRemoverFoto,
   onEstadoChange,
 }: Props) {
+  const { cores, estilos: styles } = useEstilos();
   const [codigo, setCodigo] = useState(codigoInicial);
   const [descricao, setDescricao] = useState(descricaoInicial);
   const [erros, setErros] = useState<ErrosCampos>({});
@@ -223,7 +225,7 @@ export default function ProdutoForm({
           autoCapitalize="none"
           autoCorrect={false}
           placeholder="Ex.: AG-001"
-          placeholderTextColor="#83939e"
+          placeholderTextColor={cores.placeholder}
           returnKeyType="next"
           onSubmitEditing={() => descricaoRef.current?.focus()}
           style={[styles.input, !!erros.codigo && styles.inputError]}
@@ -258,7 +260,7 @@ export default function ProdutoForm({
           numberOfLines={4}
           textAlignVertical="top"
           placeholder="Como este produto deve aparecer no catálogo?"
-          placeholderTextColor="#83939e"
+          placeholderTextColor={cores.placeholder}
           style={[
             styles.input,
             styles.textarea,
@@ -322,7 +324,7 @@ export default function ProdutoForm({
           ]}
         >
           {preparandoFoto && (
-            <ActivityIndicator color="#137c65" style={styles.spinner} />
+            <ActivityIndicator color={cores.destaque} style={styles.spinner} />
           )}
 
           <Text style={styles.secondaryButtonText}>
@@ -420,11 +422,11 @@ export default function ProdutoForm({
   );
 }
 
-const styles = StyleSheet.create({
+const useEstilos = criarEstilosProdutos((cores) => StyleSheet.create({
   container: {
-    backgroundColor: "#ffffff",
+    backgroundColor: cores.superficie,
     borderWidth: 1,
-    borderColor: "#e5eaef",
+    borderColor: cores.borda,
     borderRadius: 16,
     padding: 20,
   },
@@ -432,33 +434,33 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   label: {
-    color: "#182b3a",
+    color: cores.texto,
     fontSize: 14,
     fontWeight: "600",
     marginBottom: 8,
   },
   hint: {
-    color: "#607483",
+    color: cores.discreto,
     fontSize: 13,
     lineHeight: 20,
   },
   input: {
-    backgroundColor: "#ffffff",
+    backgroundColor: cores.superficie,
     borderWidth: 1,
-    borderColor: "#ccd7df",
+    borderColor: cores.bordaControle,
     borderRadius: 10,
     padding: 14,
-    color: "#182b3a",
+    color: cores.texto,
     fontSize: 16,
   },
   inputError: {
-    borderColor: "#b42333",
+    borderColor: cores.erro,
   },
   textarea: {
     minHeight: 110,
   },
   fieldError: {
-    color: "#b42333",
+    color: cores.erro,
     fontSize: 13,
     lineHeight: 20,
     marginTop: 8,
@@ -471,11 +473,11 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 220,
     borderRadius: 10,
-    backgroundColor: "#f0f4f7",
+    backgroundColor: cores.neutro,
     marginTop: 16,
   },
   photoInfo: {
-    color: "#607483",
+    color: cores.discreto,
     fontSize: 12,
     marginTop: 8,
     marginBottom: 14,
@@ -483,18 +485,18 @@ const styles = StyleSheet.create({
   placeholder: {
     height: 150,
     borderRadius: 10,
-    backgroundColor: "#f0f4f7",
+    backgroundColor: cores.neutro,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 16,
     marginBottom: 14,
   },
   placeholderText: {
-    color: "#607483",
+    color: cores.discreto,
     fontSize: 14,
   },
   primaryButton: {
-    backgroundColor: "#137c65",
+    backgroundColor: cores.botao,
     minHeight: 48,
     borderRadius: 10,
     padding: 14,
@@ -508,9 +510,9 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   secondaryButton: {
-    backgroundColor: "#ffffff",
+    backgroundColor: cores.superficie,
     borderWidth: 1,
-    borderColor: "#ccd7df",
+    borderColor: cores.bordaControle,
     minHeight: 48,
     borderRadius: 10,
     padding: 14,
@@ -519,7 +521,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   secondaryButtonText: {
-    color: "#137c65",
+    color: cores.destaque,
     fontSize: 15,
     fontWeight: "600",
   },
@@ -533,18 +535,18 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   removeText: {
-    color: "#b42333",
+    color: cores.erro,
     fontSize: 14,
     fontWeight: "600",
   },
   errorBox: {
-    backgroundColor: "#fff0f0",
+    backgroundColor: cores.erroSuave,
     borderRadius: 10,
     padding: 14,
     marginBottom: 20,
   },
   errorText: {
-    color: "#a52b38",
+    color: cores.erro,
     fontSize: 14,
     lineHeight: 21,
   },
@@ -554,4 +556,4 @@ const styles = StyleSheet.create({
   spinner: {
     marginRight: 10,
   },
-});
+}));

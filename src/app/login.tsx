@@ -1,3 +1,4 @@
+import { criarEstilosProdutos } from "@/hooks/use-tema-produtos";
 import { Link, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import {
@@ -18,6 +19,7 @@ export default function LoginScreen() {
   return <FormularioLogin key={cadastro || "login"} contaCriada={!!cadastro} />;
 }
 function FormularioLogin({ contaCriada }: { contaCriada: boolean }) {
+  const { cores, estilos: s } = useEstilos();
   const { estado, erroInicial, entrar, tentarNovamente } = useAuth();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -44,7 +46,7 @@ function FormularioLogin({ contaCriada }: { contaCriada: boolean }) {
   if (estado === "carregando")
     return (
       <SafeAreaView style={[s.screen, s.center]}>
-        <ActivityIndicator size="large" color="#137c65" />
+        <ActivityIndicator size="large" color={cores.destaque} />
         <Text style={s.loading}>Verificando sua sessão…</Text>
       </SafeAreaView>
     );
@@ -98,7 +100,7 @@ function FormularioLogin({ contaCriada }: { contaCriada: boolean }) {
               textContentType="username"
               editable={!enviando}
               placeholder="seu@email.com"
-              placeholderTextColor="#83939e"
+              placeholderTextColor={cores.placeholder}
             />
             <Text style={s.label}>Senha</Text>
             <TextInput
@@ -114,7 +116,7 @@ function FormularioLogin({ contaCriada }: { contaCriada: boolean }) {
               returnKeyType="go"
               onSubmitEditing={() => void enviar()}
               placeholder="Sua senha"
-              placeholderTextColor="#83939e"
+              placeholderTextColor={cores.placeholder}
             />
             {!!erro && (
               <Text accessibilityRole="alert" style={s.error}>
@@ -148,7 +150,7 @@ function FormularioLogin({ contaCriada }: { contaCriada: boolean }) {
                 disabled={enviando}
                 style={{ padding: 16, alignItems: "center", minHeight: 48 }}
               >
-                <Text style={{ color: "#137c65", fontWeight: "600" }}>
+                <Text style={{ color: cores.destaque, fontWeight: "600" }}>
                   Criar conta
                 </Text>
               </Pressable>
@@ -159,50 +161,50 @@ function FormularioLogin({ contaCriada }: { contaCriada: boolean }) {
     </SafeAreaView>
   );
 }
-const s = StyleSheet.create({
+const useEstilos = criarEstilosProdutos((cores) => StyleSheet.create({
   flex: { flex: 1 },
-  screen: { flex: 1, backgroundColor: "#f5f7f9" },
+  screen: { flex: 1, backgroundColor: cores.fundo },
   center: { justifyContent: "center", alignItems: "center", padding: 24 },
   content: { flexGrow: 1, justifyContent: "center", padding: 24 },
   eyebrow: {
-    color: "#137c65",
+    color: cores.destaque,
     fontSize: 12,
     fontWeight: "700",
     letterSpacing: 2,
     marginBottom: 12,
   },
   title: {
-    color: "#182b3a",
+    color: cores.texto,
     fontSize: 30,
     fontWeight: "700",
     marginBottom: 16,
   },
   description: {
-    color: "#607483",
+    color: cores.discreto,
     fontSize: 16,
     lineHeight: 24,
     marginBottom: 28,
   },
   card: {
-    backgroundColor: "white",
-    borderColor: "#e5eaef",
+    backgroundColor: cores.superficie,
+    borderColor: cores.borda,
     borderWidth: 1,
     borderRadius: 16,
     padding: 20,
   },
-  label: { color: "#182b3a", fontSize: 14, fontWeight: "600", marginBottom: 8 },
+  label: { color: cores.texto, fontSize: 14, fontWeight: "600", marginBottom: 8 },
   input: {
-    backgroundColor: "white",
-    borderColor: "#ccd7df",
+    backgroundColor: cores.superficie,
+    borderColor: cores.bordaControle,
     borderWidth: 1,
     borderRadius: 10,
     padding: 14,
     fontSize: 16,
-    color: "#182b3a",
+    color: cores.texto,
     marginBottom: 20,
   },
   button: {
-    backgroundColor: "#137c65",
+    backgroundColor: cores.botao,
     borderRadius: 10,
     minHeight: 48,
     padding: 14,
@@ -214,13 +216,13 @@ const s = StyleSheet.create({
   buttonText: { color: "white", fontSize: 16, fontWeight: "600" },
   spinner: { marginRight: 10 },
   error: {
-    color: "#a52b38",
-    backgroundColor: "#fff0f0",
+    color: cores.erro,
+    backgroundColor: cores.erroSuave,
     padding: 12,
     borderRadius: 8,
     lineHeight: 21,
     marginBottom: 20,
   },
-  hint: { color: "#607483", fontSize: 12, lineHeight: 18, marginTop: 20 },
-  loading: { color: "#607483", fontSize: 16, marginTop: 16 },
-});
+  hint: { color: cores.discreto, fontSize: 12, lineHeight: 18, marginTop: 20 },
+  loading: { color: cores.discreto, fontSize: 16, marginTop: 16 },
+}));

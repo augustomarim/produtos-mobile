@@ -1,3 +1,4 @@
+import { criarEstilosProdutos } from "@/hooks/use-tema-produtos";
 import { StyleSheet, Text, View } from "react-native";
 import type { PaginaProdutos } from "@/types/produto";
 export default function ResumoProdutos({
@@ -5,6 +6,7 @@ export default function ResumoProdutos({
 }: {
   resumo?: PaginaProdutos["resumo"];
 }) {
+  const { estilos: s } = useEstilos();
   return (
     <View style={s.container}>
       {[
@@ -22,18 +24,18 @@ export default function ResumoProdutos({
     </View>
   );
 }
-const s = StyleSheet.create({
+const useEstilos = criarEstilosProdutos((cores) => StyleSheet.create({
   container: {
     flexDirection: "row",
-    backgroundColor: "white",
+    backgroundColor: cores.superficie,
     borderWidth: 1,
-    borderColor: "#e5eaef",
+    borderColor: cores.borda,
     borderRadius: 12,
     paddingVertical: 18,
     marginBottom: 20,
   },
   item: { flex: 1, alignItems: "center" },
-  label: { color: "#607483", fontSize: 12, marginBottom: 6 },
-  value: { color: "#182b3a", fontSize: 24, fontWeight: "700" },
-  active: { color: "#176b45" },
-});
+  label: { color: cores.discreto, fontSize: 12, marginBottom: 6 },
+  value: { color: cores.texto, fontSize: 24, fontWeight: "700" },
+  active: { color: cores.destaque },
+}));

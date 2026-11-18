@@ -1,13 +1,13 @@
+import { criarEstilosProdutos } from "@/hooks/use-tema-produtos";
+import { Image, type ImageStyle } from "expo-image";
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Image,
   Modal,
   Pressable,
   StyleSheet,
   Text,
   View,
-  type ImageStyle,
   type StyleProp,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -26,6 +26,7 @@ function Visualizador({
   nome: string;
   fechar: () => void;
 }) {
+  const { estilos: s } = useEstilos();
   const [erro, setErro] = useState(false);
   const [carregando, setCarregando] = useState(true);
   return (
@@ -40,10 +41,11 @@ function Visualizador({
           ) : (
             <Image
               source={{ uri }}
+              cachePolicy="disk"
               accessibilityLabel={`Foto ampliada de ${nome}`}
-              resizeMode="contain"
+              contentFit="contain"
               style={s.large}
-              onLoadEnd={() => setCarregando(false)}
+              onLoad={() => setCarregando(false)}
               onError={() => {
                 setErro(true);
                 setCarregando(false);
@@ -64,6 +66,7 @@ function Visualizador({
   );
 }
 export default function ImagemProduto({ uri, miniatura, nome, style }: Props) {
+  const { estilos: s } = useEstilos();
   const [aberta, setAberta] = useState(false);
   const [falhou, setFalhou] = useState<string | null>(null);
   const src = miniatura || uri;
@@ -76,14 +79,16 @@ export default function ImagemProduto({ uri, miniatura, nome, style }: Props) {
       >
         {falhou === src ? (
           <View style={[s.thumb, style, s.empty]}>
-            <Text>Sem foto</Text>
+            <Text style={s.placeholder}>Sem foto</Text>
           </View>
         ) : (
           <Image
             accessibilityLabel={`Foto de ${nome}`}
             source={{ uri: src }}
+            cachePolicy="memory-disk"
+            recyclingKey={src}
             style={[s.thumb, style]}
-            resizeMode="contain"
+            contentFit="contain"
             onError={() => setFalhou(src)}
           />
         )}
@@ -94,13 +99,14 @@ export default function ImagemProduto({ uri, miniatura, nome, style }: Props) {
     </>
   );
 }
-const s = StyleSheet.create({
+const useEstilos = criarEstilosProdutos((cores) => StyleSheet.create({
   thumb: {
     width: 68,
     height: 68,
     borderRadius: 10,
-    backgroundColor: "#f0f4f7",
+    backgroundColor: cores.neutro,
   },
+  placeholder: { color: cores.discreto },
   empty: { alignItems: "center", justifyContent: "center" },
   overlay: {
     flex: 1,
@@ -113,11 +119,11 @@ const s = StyleSheet.create({
   light: { color: "white", fontSize: 15 },
   large: { width: "100%", flex: 1 },
   close: {
-    backgroundColor: "white",
+    backgroundColor: cores.superficie,
     borderRadius: 10,
     padding: 16,
     alignItems: "center",
     minHeight: 48,
   },
-  closeText: { color: "#137c65", fontWeight: "700" },
-});
+  closeText: { color: cores.destaque, fontWeight: "700" },
+}));

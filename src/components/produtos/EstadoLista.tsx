@@ -1,11 +1,13 @@
+import { criarEstilosProdutos } from "@/hooks/use-tema-produtos";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 type Props = { carregando: boolean; erro: string; temProdutos: boolean };
 export default function EstadoLista({ carregando, erro, temProdutos }: Props) {
+  const { cores, estilos: s } = useEstilos();
   return (
     <View style={s.container}>
       {carregando ? (
         <>
-          <ActivityIndicator size="large" color="#137c65" />
+          <ActivityIndicator size="large" color={cores.destaque} />
           <Text style={s.text}>Carregando seus produtos…</Text>
         </>
       ) : erro ? (
@@ -27,7 +29,7 @@ export default function EstadoLista({ carregando, erro, temProdutos }: Props) {
     </View>
   );
 }
-const s = StyleSheet.create({
+const useEstilos = criarEstilosProdutos((cores) => StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",
@@ -35,17 +37,17 @@ const s = StyleSheet.create({
     paddingVertical: 40,
   },
   title: {
-    color: "#182b3a",
+    color: cores.texto,
     fontSize: 21,
     fontWeight: "600",
     textAlign: "center",
     marginBottom: 12,
   },
   text: {
-    color: "#607483",
+    color: cores.discreto,
     fontSize: 15,
     lineHeight: 23,
     textAlign: "center",
     marginTop: 14,
   },
-});
+}));

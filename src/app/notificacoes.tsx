@@ -1,3 +1,4 @@
+import { criarEstilosProdutos } from "@/hooks/use-tema-produtos";
 import { useCallback } from "react";
 import { Stack, useFocusEffect } from "expo-router";
 import {
@@ -17,6 +18,7 @@ import {
   tituloNotificacao,
 } from "@/lib/notificacoes";
 export default function NotificacoesScreen() {
+  const { cores, estilos: s } = useEstilos();
   const {
     dados,
     erro,
@@ -44,7 +46,7 @@ export default function NotificacoesScreen() {
           title: "Notificações",
           headerShown: true,
           headerBackTitle: "Voltar",
-          headerTintColor: "#137c65",
+          headerTintColor: cores.destaque,
         }}
       />
       <FlatList
@@ -110,7 +112,7 @@ export default function NotificacoesScreen() {
           carregando ? (
             <ActivityIndicator
               accessibilityLabel="Carregando notificações"
-              color="#137c65"
+              color={cores.destaque}
             />
           ) : !erro ? (
             <Text style={s.hint}>Nenhuma notificação por enquanto.</Text>
@@ -175,42 +177,42 @@ export default function NotificacoesScreen() {
     </SafeAreaView>
   );
 }
-const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#f5f7f9" },
+const useEstilos = criarEstilosProdutos((cores) => StyleSheet.create({
+  screen: { flex: 1, backgroundColor: cores.fundo },
   content: { padding: 20, paddingBottom: 40, flexGrow: 1 },
   title: {
-    color: "#182b3a",
+    color: cores.texto,
     fontSize: 27,
     fontWeight: "700",
     marginBottom: 12,
   },
-  hint: { color: "#607483", fontSize: 13, lineHeight: 21, marginBottom: 8 },
+  hint: { color: cores.discreto, fontSize: 13, lineHeight: 21, marginBottom: 8 },
   actions: { gap: 8, marginTop: 10, marginBottom: 20 },
   button: {
     minHeight: 44,
     borderWidth: 1,
-    borderColor: "#ccd7df",
-    backgroundColor: "white",
+    borderColor: cores.bordaControle,
+    backgroundColor: cores.superficie,
     borderRadius: 10,
     padding: 12,
     alignItems: "center",
     justifyContent: "center",
   },
-  buttonText: { color: "#137c65", fontSize: 14, fontWeight: "600" },
+  buttonText: { color: cores.destaque, fontSize: 14, fontWeight: "600" },
   disabled: { opacity: 0.45 },
-  error: { color: "#a52b38", fontSize: 14, lineHeight: 22, marginBottom: 16 },
+  error: { color: cores.erro, fontSize: 14, lineHeight: 22, marginBottom: 16 },
   card: {
-    backgroundColor: "white",
+    backgroundColor: cores.superficie,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#dce5ea",
+    borderColor: cores.borda,
     padding: 16,
     marginBottom: 14,
   },
   unread: {
     borderLeftWidth: 4,
-    borderLeftColor: "#137c65",
-    backgroundColor: "#f1faf6",
+    borderLeftColor: cores.destaque,
+    backgroundColor: cores.destaqueSuave,
   },
   heading: {
     flexDirection: "row",
@@ -219,14 +221,14 @@ const s = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 12,
   },
-  cardTitle: { fontSize: 16, fontWeight: "700", color: "#182b3a" },
-  status: { fontSize: 12, color: "#137c65" },
-  name: { fontSize: 17, fontWeight: "600", color: "#182b3a", marginBottom: 6 },
-  details: { fontSize: 14, color: "#425868", lineHeight: 22, marginBottom: 12 },
+  cardTitle: { fontSize: 16, fontWeight: "700", color: cores.texto },
+  status: { fontSize: 12, color: cores.destaque },
+  name: { fontSize: 17, fontWeight: "600", color: cores.texto, marginBottom: 6 },
+  details: { fontSize: 14, color: cores.secundario, lineHeight: 22, marginBottom: 12 },
   read: {
     minHeight: 44,
     alignSelf: "flex-start",
     justifyContent: "center",
     paddingVertical: 8,
   },
-});
+}));

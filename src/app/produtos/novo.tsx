@@ -1,3 +1,4 @@
+import { criarEstilosProdutos } from "@/hooks/use-tema-produtos";
 import { useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -18,6 +19,7 @@ import { criarProduto } from "@/lib/produtos";
 import type { DadosProdutoForm } from "@/types/produto";
 
 export default function NovoProdutoScreen() {
+  const { cores, estilos: s } = useEstilos();
   const router = useRouter();
   const { requisicao, estado } = useAuth();
   const [enviando, setEnviando] = useState(false);
@@ -69,8 +71,8 @@ export default function NovoProdutoScreen() {
           headerShown: true,
           gestureEnabled: !enviando,
           headerBackTitle: "Voltar",
-          headerTintColor: "#137c65",
-          headerStyle: { backgroundColor: "#f5f7f9" },
+          headerTintColor: cores.destaque,
+          headerStyle: { backgroundColor: cores.fundo },
         }}
       />
       <KeyboardAvoidingView
@@ -97,20 +99,20 @@ export default function NovoProdutoScreen() {
     </SafeAreaView>
   );
 }
-const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#f5f7f9" },
+const useEstilos = criarEstilosProdutos((cores) => StyleSheet.create({
+  screen: { flex: 1, backgroundColor: cores.fundo },
   flex: { flex: 1 },
   content: { padding: 20, paddingBottom: 36 },
   title: {
-    color: "#182b3a",
+    color: cores.texto,
     fontSize: 28,
     fontWeight: "700",
     marginBottom: 10,
   },
   description: {
-    color: "#607483",
+    color: cores.discreto,
     fontSize: 15,
     lineHeight: 22,
     marginBottom: 22,
   },
-});
+}));

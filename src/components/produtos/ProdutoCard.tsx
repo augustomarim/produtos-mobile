@@ -1,3 +1,4 @@
+import { criarEstilosProdutos } from "@/hooks/use-tema-produtos";
 import { Link } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import CheckboxProduto from "./CheckboxProduto";
@@ -22,6 +23,7 @@ export default function ProdutoCard({
   onStatus,
   onExcluir,
 }: Props) {
+  const { estilos: s } = useEstilos();
   const imagem = produto.foto_miniatura || produto.foto_produto;
   const ativo = produto.status === "ativo";
   return (
@@ -53,7 +55,7 @@ export default function ProdutoCard({
           <Text style={s.code}>{produto.codigo_produto}</Text>
           <View style={[s.badge, ativo ? s.activeBadge : s.inactiveBadge]}>
             <Text
-              style={[s.badgeText, { color: ativo ? "#176b45" : "#607483" }]}
+              style={[s.badgeText, ativo ? s.activeBadgeText : s.inactiveBadgeText]}
             >
               {ativo ? "● Ativo" : "● Inativo"}
             </Text>
@@ -110,7 +112,7 @@ export default function ProdutoCard({
     </View>
   );
 }
-const s = StyleSheet.create({
+const useEstilos = criarEstilosProdutos((cores) => StyleSheet.create({
   actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 16 },
   action: {
     flex: 1,
@@ -120,47 +122,49 @@ const s = StyleSheet.create({
     justifyContent: "center",
     padding: 9,
     borderWidth: 1,
-    borderColor: "#dbe4ea",
+    borderColor: cores.borda,
     borderRadius: 9,
   },
-  actionText: { fontSize: 13, fontWeight: "600", color: "#137c65" },
-  danger: { fontSize: 13, fontWeight: "600", color: "#a52b38" },
+  actionText: { fontSize: 13, fontWeight: "600", color: cores.destaque },
+  danger: { fontSize: 13, fontWeight: "600", color: cores.erro },
   disabled: { opacity: 0.45 },
   card: {
-    backgroundColor: "white",
+    backgroundColor: cores.superficie,
     borderWidth: 1,
-    borderColor: "#e5eaef",
+    borderColor: cores.borda,
     borderRadius: 12,
     padding: 16,
     marginBottom: 14,
   },
-  activeCard: { borderLeftWidth: 4, borderLeftColor: "#137c65" },
+  activeCard: { borderLeftWidth: 4, borderLeftColor: cores.destaque },
   header: { flexDirection: "row", gap: 14, alignItems: "flex-start" },
   photo: { width: 68, height: 68, borderRadius: 10 },
   placeholder: {
-    backgroundColor: "#eef3f6",
+    backgroundColor: cores.neutro,
     justifyContent: "center",
     alignItems: "center",
   },
-  placeholderText: { color: "#607483", fontSize: 11 },
+  placeholderText: { color: cores.discreto, fontSize: 11 },
   info: { flex: 1 },
-  name: { color: "#182b3a", fontSize: 17, fontWeight: "600", marginBottom: 5 },
-  code: { color: "#607483", fontSize: 13, marginBottom: 9 },
+  name: { color: cores.texto, fontSize: 17, fontWeight: "600", marginBottom: 5 },
+  code: { color: cores.discreto, fontSize: 13, marginBottom: 9 },
   badge: {
     alignSelf: "flex-start",
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
-  activeBadge: { backgroundColor: "#eaf6ef" },
-  inactiveBadge: { backgroundColor: "#eef1f4" },
+  activeBadgeText: { color: cores.destaque },
+  inactiveBadgeText: { color: cores.discreto },
+  activeBadge: { backgroundColor: cores.destaqueSuave },
+  inactiveBadge: { backgroundColor: cores.neutro },
   badgeText: { fontSize: 12, fontWeight: "600" },
   dates: {
     borderTopWidth: 1,
-    borderTopColor: "#edf1f4",
+    borderTopColor: cores.borda,
     paddingTop: 12,
     marginTop: 14,
     gap: 5,
   },
-  date: { color: "#607483", fontSize: 12, lineHeight: 18 },
-});
+  date: { color: cores.discreto, fontSize: 12, lineHeight: 18 },
+}));

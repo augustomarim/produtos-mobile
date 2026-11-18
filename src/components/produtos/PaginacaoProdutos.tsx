@@ -1,3 +1,4 @@
+import { criarEstilosProdutos } from "@/hooks/use-tema-produtos";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 type Props = {
   pagina: number;
@@ -11,6 +12,7 @@ export default function PaginacaoProdutos({
   desabilitado,
   onMudar,
 }: Props) {
+  const { estilos: s } = useEstilos();
   return (
     <View style={s.container}>
       <Text style={s.label}>
@@ -39,10 +41,10 @@ export default function PaginacaoProdutos({
     </View>
   );
 }
-const s = StyleSheet.create({
+const useEstilos = criarEstilosProdutos((cores) => StyleSheet.create({
   container: { marginTop: 8, paddingVertical: 14 },
   label: {
-    color: "#607483",
+    color: cores.discreto,
     fontSize: 13,
     textAlign: "center",
     marginBottom: 14,
@@ -51,12 +53,12 @@ const s = StyleSheet.create({
   button: {
     flex: 1,
     alignItems: "center",
-    backgroundColor: "white",
+    backgroundColor: cores.superficie,
     borderWidth: 1,
-    borderColor: "#ccd7df",
+    borderColor: cores.bordaControle,
     borderRadius: 8,
     padding: 12,
   },
-  text: { color: "#425868", fontSize: 14, fontWeight: "600" },
+  text: { color: cores.secundario, fontSize: 14, fontWeight: "600" },
   disabled: { opacity: 0.45 },
-});
+}));

@@ -1,3 +1,4 @@
+import { criarEstilosProdutos } from "@/hooks/use-tema-produtos";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import type { FiltroStatus } from "@/types/produto";
 type Props = {
@@ -17,6 +18,7 @@ export default function FiltrosProdutos({
   desabilitado,
   onAlterar,
 }: Props) {
+  const { cores, estilos: s } = useEstilos();
   return (
     <View style={s.container}>
       <Text style={s.label}>Buscar produto</Text>
@@ -25,7 +27,7 @@ export default function FiltrosProdutos({
         value={busca}
         onChangeText={(texto) => onAlterar(texto, filtro)}
         placeholder="Buscar por nome"
-        placeholderTextColor="#83939e"
+        placeholderTextColor={cores.placeholder}
         autoCapitalize="none"
         autoCorrect={false}
         maxLength={120}
@@ -73,15 +75,15 @@ export default function FiltrosProdutos({
     </View>
   );
 }
-const s = StyleSheet.create({
+const useEstilos = criarEstilosProdutos((cores) => StyleSheet.create({
   container: { marginBottom: 20 },
-  label: { color: "#182b3a", fontSize: 14, fontWeight: "600", marginBottom: 8 },
+  label: { color: cores.texto, fontSize: 14, fontWeight: "600", marginBottom: 8 },
   input: {
     borderWidth: 1,
-    borderColor: "#ccd7df",
+    borderColor: cores.bordaControle,
     borderRadius: 10,
-    backgroundColor: "white",
-    color: "#182b3a",
+    backgroundColor: cores.superficie,
+    color: cores.texto,
     fontSize: 16,
     padding: 14,
     marginBottom: 12,
@@ -93,14 +95,14 @@ const s = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "#ccd7df",
+    borderColor: cores.bordaControle,
     borderRadius: 9,
-    backgroundColor: "white",
+    backgroundColor: cores.superficie,
     padding: 10,
   },
-  selected: { borderColor: "#137c65", backgroundColor: "#eaf6ef" },
-  optionText: { color: "#607483", fontSize: 14, fontWeight: "600" },
-  selectedText: { color: "#137c65", fontSize: 14, fontWeight: "600" },
+  selected: { borderColor: cores.destaque, backgroundColor: cores.destaqueSuave },
+  optionText: { color: cores.discreto, fontSize: 14, fontWeight: "600" },
+  selectedText: { color: cores.destaque, fontSize: 14, fontWeight: "600" },
   disabled: { opacity: 0.5 },
   clear: {
     alignSelf: "flex-start",
@@ -108,4 +110,4 @@ const s = StyleSheet.create({
     justifyContent: "center",
     marginTop: 4,
   },
-});
+}));

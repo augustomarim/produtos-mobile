@@ -1,3 +1,4 @@
+import { criarEstilosProdutos } from "@/hooks/use-tema-produtos";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BottomTabInset } from "@/constants/theme";
@@ -16,6 +17,7 @@ export default function AcoesLoteProdutos({
   onAcao,
   onLimpar,
 }: Props) {
+  const { estilos: s } = useEstilos();
   if (!selecionados.length) return null;
   const ativos = selecionados.filter((p) => p.status === "ativo").length;
   const inativos = selecionados.length - ativos;
@@ -60,28 +62,28 @@ export default function AcoesLoteProdutos({
     </SafeAreaView>
   );
 }
-const s = StyleSheet.create({
+const useEstilos = criarEstilosProdutos((cores) => StyleSheet.create({
   safe: {
-    backgroundColor: "white",
+    backgroundColor: cores.superficie,
     paddingBottom: BottomTabInset,
     borderTopWidth: 1,
-    borderTopColor: "#dbe5e9",
+    borderTopColor: cores.borda,
   },
   container: { paddingHorizontal: 16, paddingTop: 12 },
-  title: { color: "#182b3a", fontSize: 15, fontWeight: "700" },
-  hint: { color: "#607483", fontSize: 12, marginTop: 4, marginBottom: 10 },
+  title: { color: cores.texto, fontSize: 15, fontWeight: "700" },
+  hint: { color: cores.discreto, fontSize: 12, marginTop: 4, marginBottom: 10 },
   buttons: { flexDirection: "row", gap: 8 },
   button: {
     flex: 1,
     borderWidth: 1,
-    borderColor: "#ccd7df",
+    borderColor: cores.bordaControle,
     borderRadius: 9,
     padding: 12,
     minHeight: 44,
     alignItems: "center",
   },
-  text: { color: "#137c65", fontWeight: "600", fontSize: 13 },
-  danger: { color: "#a52b38" },
+  text: { color: cores.destaque, fontWeight: "600", fontSize: 13 },
+  danger: { color: cores.erro },
   disabled: { opacity: 0.4 },
   clear: { alignItems: "center", justifyContent: "center", minHeight: 44 },
-});
+}));

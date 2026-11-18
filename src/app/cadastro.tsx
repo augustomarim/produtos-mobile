@@ -1,3 +1,4 @@
+import { criarEstilosProdutos } from "@/hooks/use-tema-produtos";
 import { useRef, useState, type ComponentRef } from "react";
 import {
   KeyboardAvoidingView,
@@ -15,6 +16,7 @@ import { api, ApiError } from "@/lib/api";
 import { useProtecaoFormulario } from "@/hooks/useProtecaoFormulario";
 import { useAuth } from "@/contexts/AuthContext";
 export default function CadastroScreen() {
+  const { cores, estilos: s } = useEstilos();
   const router = useRouter();
   const { estado } = useAuth();
   const [nome, setNome] = useState("");
@@ -126,7 +128,7 @@ export default function CadastroScreen() {
           headerShown: true,
           title: "Criar conta",
           headerBackTitle: "Voltar",
-          headerTintColor: "#137c65",
+          headerTintColor: cores.destaque,
           gestureEnabled: !enviando,
         }}
       />
@@ -201,38 +203,38 @@ export default function CadastroScreen() {
     </SafeAreaView>
   );
 }
-const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#f5f7f9" },
+const useEstilos = criarEstilosProdutos((cores) => StyleSheet.create({
+  screen: { flex: 1, backgroundColor: cores.fundo },
   flex: { flex: 1 },
   content: { padding: 24, paddingBottom: 40 },
   title: {
-    color: "#182b3a",
+    color: cores.texto,
     fontSize: 28,
     fontWeight: "700",
     marginBottom: 12,
   },
-  hint: { color: "#607483", fontSize: 15, lineHeight: 23, marginBottom: 22 },
+  hint: { color: cores.discreto, fontSize: 15, lineHeight: 23, marginBottom: 22 },
   field: { marginBottom: 18 },
-  label: { color: "#182b3a", fontWeight: "600", marginBottom: 8 },
+  label: { color: cores.texto, fontWeight: "600", marginBottom: 8 },
   input: {
     borderWidth: 1,
-    borderColor: "#ccd7df",
+    borderColor: cores.bordaControle,
     borderRadius: 10,
     padding: 14,
     fontSize: 16,
-    backgroundColor: "white",
-    color: "#182b3a",
+    backgroundColor: cores.superficie,
+    color: cores.texto,
   },
-  invalid: { borderColor: "#b42333" },
+  invalid: { borderColor: cores.erro },
   error: {
-    color: "#a52b38",
+    color: cores.erro,
     fontSize: 13,
     lineHeight: 20,
     marginTop: 8,
     marginBottom: 10,
   },
   button: {
-    backgroundColor: "#137c65",
+    backgroundColor: cores.botao,
     borderRadius: 10,
     padding: 16,
     alignItems: "center",
@@ -246,5 +248,5 @@ const s = StyleSheet.create({
     justifyContent: "center",
     marginTop: 12,
   },
-  cancelText: { color: "#137c65", fontWeight: "600" },
-});
+  cancelText: { color: cores.destaque, fontWeight: "600" },
+}));

@@ -1,3 +1,4 @@
+import { criarEstilosProdutos } from "@/hooks/use-tema-produtos";
 import { Pressable, StyleSheet, Text } from "react-native";
 export default function CheckboxProduto({
   label,
@@ -12,6 +13,7 @@ export default function CheckboxProduto({
   desabilitado?: boolean;
   onPress: () => void;
 }) {
+  const { estilos: s } = useEstilos();
   return (
     <Pressable
       accessibilityRole="checkbox"
@@ -32,18 +34,18 @@ export default function CheckboxProduto({
     </Pressable>
   );
 }
-const s = StyleSheet.create({
+const useEstilos = criarEstilosProdutos((cores) => StyleSheet.create({
   box: {
     minWidth: 44,
     minHeight: 44,
     borderWidth: 1,
-    borderColor: "#bdcdd5",
+    borderColor: cores.bordaControle,
     borderRadius: 9,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "white",
+    backgroundColor: cores.superficie,
   },
-  checked: { backgroundColor: "#137c65", borderColor: "#137c65" },
+  checked: { backgroundColor: cores.botao, borderColor: cores.destaque },
   text: { color: "white", fontSize: 20, fontWeight: "700" },
   disabled: { opacity: 0.5 },
-});
+}));

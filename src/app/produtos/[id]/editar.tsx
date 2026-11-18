@@ -1,3 +1,4 @@
+import { criarEstilosProdutos } from "@/hooks/use-tema-produtos";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -35,6 +36,7 @@ export default function EditarProdutoScreen() {
   );
 }
 function Editor({ id }: { id: number }) {
+  const { cores, estilos: s } = useEstilos();
   const router = useRouter();
   const { requisicao, estado } = useAuth();
   const avisar = useFeedback();
@@ -131,7 +133,7 @@ function Editor({ id }: { id: number }) {
           title: "Editar produto",
           headerShown: true,
           headerBackTitle: "Voltar",
-          headerTintColor: "#137c65",
+          headerTintColor: cores.destaque,
           gestureEnabled: !enviando,
         }}
       />
@@ -148,7 +150,7 @@ function Editor({ id }: { id: number }) {
             <ActivityIndicator
               accessibilityLabel="Carregando produto"
               size="large"
-              color="#137c65"
+              color={cores.destaque}
             />
           ) : erro ? (
             <>
@@ -164,7 +166,7 @@ function Editor({ id }: { id: number }) {
                   setTentativa((v) => v + 1);
                 }}
               >
-                <Text>Tentar novamente</Text>
+                <Text style={s.retryText}>Tentar novamente</Text>
               </Pressable>
             </>
           ) : (
@@ -186,22 +188,23 @@ function Editor({ id }: { id: number }) {
     </SafeAreaView>
   );
 }
-const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#f5f7f9" },
+const useEstilos = criarEstilosProdutos((cores) => StyleSheet.create({
+  screen: { flex: 1, backgroundColor: cores.fundo },
   flex: { flex: 1 },
   content: { padding: 20, paddingBottom: 36 },
   title: {
-    color: "#182b3a",
+    color: cores.texto,
     fontSize: 28,
     fontWeight: "700",
     marginBottom: 22,
   },
-  error: { color: "#a52b38", fontSize: 15, marginBottom: 16 },
+  error: { color: cores.erro, fontSize: 15, marginBottom: 16 },
+  retryText: { color: cores.texto },
   button: {
-    backgroundColor: "white",
+    backgroundColor: cores.superficie,
     borderRadius: 10,
     padding: 16,
     alignItems: "center",
     minHeight: 48,
   },
-});
+}));

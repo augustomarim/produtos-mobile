@@ -1,3 +1,4 @@
+import { criarEstilosProdutos } from "@/hooks/use-tema-produtos";
 import {
   createContext,
   useCallback,
@@ -14,6 +15,7 @@ const Context = createContext<(texto: string, persistente?: boolean) => void>(
   () => {},
 );
 export function FeedbackProvider({ children }: { children: ReactNode }) {
+  const { estilos: s } = useEstilos();
   const [aviso, setAviso] = useState<Aviso | null>(null);
   const { estado } = useAuth();
   const insets = useSafeAreaInsets();
@@ -56,7 +58,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
             onPress={() => setAviso(null)}
             style={s.close}
           >
-            <Text>×</Text>
+            <Text style={s.closeText}>×</Text>
           </Pressable>
         </View>
       )}
@@ -64,27 +66,28 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
   );
 }
 export const useFeedback = () => useContext(Context);
-const s = StyleSheet.create({
+const useEstilos = criarEstilosProdutos((cores) => StyleSheet.create({
   toast: {
     position: "absolute",
     left: 16,
     right: 16,
     zIndex: 100,
-    backgroundColor: "#eaf6ef",
+    backgroundColor: cores.destaqueSuave,
     borderWidth: 1,
-    borderColor: "#b6deca",
+    borderColor: cores.destaqueBorda,
     borderRadius: 12,
     padding: 12,
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
   },
-  warning: { backgroundColor: "#fff3df", borderColor: "#e5c68d" },
-  text: { flex: 1, color: "#234338", fontSize: 14, lineHeight: 21 },
+  warning: { backgroundColor: cores.alertaSuave, borderColor: cores.alertaBorda },
+  text: { flex: 1, color: cores.destaque, fontSize: 14, lineHeight: 21 },
+  closeText: { color: cores.texto },
   close: {
     minHeight: 44,
     minWidth: 44,
     alignItems: "center",
     justifyContent: "center",
   },
-});
+}));

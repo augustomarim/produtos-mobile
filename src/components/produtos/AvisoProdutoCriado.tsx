@@ -1,6 +1,8 @@
+import { criarEstilosProdutos } from "@/hooks/use-tema-produtos";
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 export default function AvisoProdutoCriado() {
+  const { estilos: s } = useEstilos();
   const [visivel, setVisivel] = useState(true);
   useEffect(() => {
     const timer = setTimeout(() => setVisivel(false), 6500);
@@ -23,9 +25,9 @@ export default function AvisoProdutoCriado() {
     </View>
   );
 }
-const s = StyleSheet.create({
+const useEstilos = criarEstilosProdutos((cores) => StyleSheet.create({
   container: {
-    backgroundColor: "#eaf6ef",
+    backgroundColor: cores.destaqueSuave,
     borderRadius: 10,
     padding: 12,
     marginBottom: 18,
@@ -34,11 +36,11 @@ const s = StyleSheet.create({
     justifyContent: "space-between",
     gap: 10,
   },
-  text: { color: "#176b45", fontSize: 14 },
+  text: { color: cores.destaque, fontSize: 14 },
   close: {
     minHeight: 44,
     minWidth: 44,
     alignItems: "center",
     justifyContent: "center",
   },
-});
+}));

@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import { useColorScheme } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { useCoresProdutos } from "@/hooks/use-tema-produtos";
 import * as SplashScreen from "expo-splash-screen";
 import { NotificacoesProvider } from "@/contexts/NotificacoesContext";
 import { FeedbackProvider } from "@/contexts/FeedbackContext";
@@ -28,13 +30,27 @@ function Navegacao() {
   );
 }
 export default function RootLayout() {
-  const scheme = useColorScheme();
+  const escuro = useColorScheme() === "dark";
+  const base = escuro ? DarkTheme : DefaultTheme;
+  const cores = useCoresProdutos();
+  const tema = {
+    ...base,
+    colors: {
+      ...base.colors,
+      background: cores.fundo,
+      card: cores.superficie,
+      text: cores.texto,
+      border: cores.borda,
+      primary: cores.destaque,
+    },
+  };
   return (
     <SafeAreaProvider>
       <AuthProvider>
         <NotificacoesProvider>
           <FeedbackProvider>
-            <ThemeProvider value={scheme === "dark" ? DarkTheme : DefaultTheme}>
+            <ThemeProvider value={tema}>
+              <StatusBar style={escuro ? "light" : "dark"} />
               <Navegacao />
             </ThemeProvider>
           </FeedbackProvider>

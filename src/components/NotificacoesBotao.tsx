@@ -1,7 +1,9 @@
+import { criarEstilosProdutos } from "@/hooks/use-tema-produtos";
 import { Link } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useNotificacoes } from "@/contexts/NotificacoesContext";
 export default function NotificacoesBotao() {
+  const { estilos: s } = useEstilos();
   const { dados, erro } = useNotificacoes();
   const total = dados?.naoLidas || 0;
   return (
@@ -21,7 +23,7 @@ export default function NotificacoesBotao() {
     </Link>
   );
 }
-const s = StyleSheet.create({
+const useEstilos = criarEstilosProdutos((cores) => StyleSheet.create({
   badge: {
     backgroundColor: "#d33045",
     minWidth: 22,
@@ -35,9 +37,9 @@ const s = StyleSheet.create({
   button: {
     minHeight: 48,
     borderWidth: 1,
-    borderColor: "#ccd7df",
+    borderColor: cores.bordaControle,
     borderRadius: 10,
-    backgroundColor: "white",
+    backgroundColor: cores.superficie,
     alignItems: "center",
     justifyContent: "center",
     padding: 12,
@@ -45,5 +47,5 @@ const s = StyleSheet.create({
     flexDirection: "row",
     gap: 8,
   },
-  text: { fontSize: 15, fontWeight: "600", color: "#137c65" },
-});
+  text: { fontSize: 15, fontWeight: "600", color: cores.destaque },
+}));

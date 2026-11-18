@@ -1,3 +1,4 @@
+import { criarEstilosProdutos } from "@/hooks/use-tema-produtos";
 import { Link, useLocalSearchParams } from "expo-router";
 import NotificacoesBotao from "@/components/NotificacoesBotao";
 import AvisoProdutoCriado from "@/components/produtos/AvisoProdutoCriado";
@@ -31,6 +32,7 @@ export default function HomeScreen() {
 }
 
 function CatalogoScreen({ mostrarAviso }: { mostrarAviso: boolean }) {
+  const { cores, estilos: s } = useEstilos();
   const catalogo = useProdutos();
   const { saindo, confirmarSaida } = useSaidaConta(catalogo.cancelar);
   const selecao = useSelecaoProdutos(catalogo.produtos);
@@ -130,7 +132,7 @@ function CatalogoScreen({ mostrarAviso }: { mostrarAviso: boolean }) {
             )}
             {catalogo.carregando && catalogo.produtos.length > 0 && (
               <View style={s.loading}>
-                <ActivityIndicator color="#137c65" />
+                <ActivityIndicator color={cores.destaque} />
                 <Text style={s.hint}>Atualizando produtos…</Text>
               </View>
             )}
@@ -194,9 +196,9 @@ function CatalogoScreen({ mostrarAviso }: { mostrarAviso: boolean }) {
     </SafeAreaView>
   );
 }
-const s = StyleSheet.create({
+const useEstilos = criarEstilosProdutos((cores) => StyleSheet.create({
   newButton: {
-    backgroundColor: "#137c65",
+    backgroundColor: cores.botao,
     padding: 14,
     minHeight: 48,
     borderRadius: 10,
@@ -205,7 +207,7 @@ const s = StyleSheet.create({
     marginBottom: 20,
   },
   newButtonText: { color: "white", fontWeight: "600", fontSize: 16 },
-  screen: { flex: 1, backgroundColor: "#f5f7f9" },
+  screen: { flex: 1, backgroundColor: cores.fundo },
   content: { flexGrow: 1, padding: 20, paddingBottom: BottomTabInset + 24 },
   header: {
     flexDirection: "row",
@@ -214,28 +216,28 @@ const s = StyleSheet.create({
     marginBottom: 20,
   },
   eyebrow: {
-    color: "#137c65",
+    color: cores.destaque,
     fontSize: 12,
     fontWeight: "700",
     letterSpacing: 1.5,
   },
-  title: { color: "#182b3a", fontSize: 30, fontWeight: "700", marginBottom: 8 },
+  title: { color: cores.texto, fontSize: 30, fontWeight: "700", marginBottom: 8 },
   description: {
-    color: "#607483",
+    color: cores.discreto,
     fontSize: 15,
     lineHeight: 22,
     marginBottom: 22,
   },
   button: {
-    backgroundColor: "white",
+    backgroundColor: cores.superficie,
     borderWidth: 1,
-    borderColor: "#ccd7df",
+    borderColor: cores.bordaControle,
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 10,
   },
-  buttonText: { color: "#425868", fontSize: 14, fontWeight: "600" },
-  logout: { color: "#a52b38", fontSize: 14, fontWeight: "600" },
+  buttonText: { color: cores.secundario, fontSize: 14, fontWeight: "600" },
+  logout: { color: cores.erro, fontSize: 14, fontWeight: "600" },
   disabled: { opacity: 0.45 },
   toolbar: {
     flexDirection: "row",
@@ -244,8 +246,8 @@ const s = StyleSheet.create({
     gap: 12,
     marginBottom: 16,
   },
-  hint: { flex: 1, color: "#607483", fontSize: 12, lineHeight: 18 },
-  count: { color: "#607483", fontSize: 12, marginBottom: 16 },
+  hint: { flex: 1, color: cores.discreto, fontSize: 12, lineHeight: 18 },
+  count: { color: cores.discreto, fontSize: 12, marginBottom: 16 },
   loading: {
     flexDirection: "row",
     alignItems: "center",
@@ -253,11 +255,11 @@ const s = StyleSheet.create({
     marginBottom: 16,
   },
   errorBox: {
-    backgroundColor: "#fff0f0",
+    backgroundColor: cores.erroSuave,
     borderRadius: 10,
     padding: 14,
     marginBottom: 18,
   },
-  error: { color: "#a52b38", fontSize: 14, lineHeight: 21 },
+  error: { color: cores.erro, fontSize: 14, lineHeight: 21 },
   retry: { alignSelf: "flex-start", paddingVertical: 10, marginTop: 4 },
-});
+}));

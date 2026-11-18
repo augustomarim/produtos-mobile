@@ -1,4 +1,4 @@
-import { useColorScheme } from "react-native";
+import { useTemaProdutos } from "@/contexts/TemaContext";
 
 const claro = {
   fundo: "#f5f7f9",
@@ -45,7 +45,7 @@ const escuro: Cores = {
 };
 
 export function useCoresProdutos(): Cores {
-  return useColorScheme() === "dark" ? escuro : claro;
+  return useTemaProdutos().tema === "dark" ? escuro : claro;
 }
 
 export function criarEstilosProdutos<T>(criar: (cores: Cores) => T) {

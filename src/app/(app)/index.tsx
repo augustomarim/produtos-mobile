@@ -1,4 +1,5 @@
 import { criarEstilosProdutos } from "@/hooks/use-tema-produtos";
+import { useTemaProdutos } from "@/contexts/TemaContext";
 import { Link, useLocalSearchParams } from "expo-router";
 import NotificacoesBotao from "@/components/NotificacoesBotao";
 import AvisoProdutoCriado from "@/components/produtos/AvisoProdutoCriado";
@@ -33,6 +34,7 @@ export default function HomeScreen() {
 
 function CatalogoScreen({ mostrarAviso }: { mostrarAviso: boolean }) {
   const { cores, estilos: s } = useEstilos();
+  const { tema, alternar } = useTemaProdutos();
   const catalogo = useProdutos();
   const { saindo, confirmarSaida } = useSaidaConta(catalogo.cancelar);
   const selecao = useSelecaoProdutos(catalogo.produtos);
@@ -74,7 +76,16 @@ function CatalogoScreen({ mostrarAviso }: { mostrarAviso: boolean }) {
           <View>
             <View style={s.header}>
               <Text style={s.eyebrow}>PRODUTOS MOBILE</Text>
-              <Pressable
+              <View style={s.headerActions}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={tema === "dark" ? "Ativar modo claro" : "Ativar modo escuro"}
+                  onPress={alternar}
+                  style={[s.button, s.themeButton]}
+                >
+                  <Text style={s.themeIcon}>{tema === "dark" ? "☀︎" : "☾"}</Text>
+                </Pressable>
+                <Pressable
                 accessibilityRole="button"
                 accessibilityState={{ disabled: ocupado, busy: saindo }}
                 disabled={ocupado}
@@ -82,7 +93,8 @@ function CatalogoScreen({ mostrarAviso }: { mostrarAviso: boolean }) {
                 style={[s.button, ocupado && s.disabled]}
               >
                 <Text style={s.logout}>{saindo ? "Saindo…" : "Sair"}</Text>
-              </Pressable>
+                </Pressable>
+              </View>
             </View>
             <Text style={s.title}>Meus produtos</Text>
             <Text style={s.description}>
@@ -237,6 +249,9 @@ const useEstilos = criarEstilosProdutos((cores) => StyleSheet.create({
     paddingVertical: 10,
   },
   buttonText: { color: cores.secundario, fontSize: 14, fontWeight: "600" },
+  headerActions: { flexDirection: "row", alignItems: "center", gap: 8 },
+  themeButton: { minWidth: 44, minHeight: 44, alignItems: "center", justifyContent: "center", paddingVertical: 0 },
+  themeIcon: { color: cores.texto, fontSize: 23 },
   logout: { color: cores.erro, fontSize: 14, fontWeight: "600" },
   disabled: { opacity: 0.45 },
   toolbar: {

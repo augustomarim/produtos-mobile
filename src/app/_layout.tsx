@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useColorScheme } from "react-native";
+import { TemaProvider, useTemaProdutos } from "@/contexts/TemaContext";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -30,7 +30,15 @@ function Navegacao() {
   );
 }
 export default function RootLayout() {
-  const escuro = useColorScheme() === "dark";
+  return (
+    <TemaProvider>
+      <LayoutComTema />
+    </TemaProvider>
+  );
+}
+
+function LayoutComTema() {
+  const escuro = useTemaProdutos().tema === "dark";
   const base = escuro ? DarkTheme : DefaultTheme;
   const cores = useCoresProdutos();
   const tema = {
